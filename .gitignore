@@ -83,3 +83,16 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# Quartugs II intermediate files
+quartus/db
+quartus/.qsys_edit
+quartus/devkits
+quartus/greybox_tmp
+quartus/incremental_db
+quartus/output_files
+quartus/output_file.map
+
+
+
+
