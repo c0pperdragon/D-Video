@@ -86,9 +86,9 @@ architecture immediate of DVideo2HDMIMain is
 	signal ram_wraddress : STD_LOGIC_VECTOR (18 DOWNTO 0);
 	signal ram_q : STD_LOGIC_VECTOR (11 DOWNTO 0);
 
-	signal colorphase_r: STD_LOGIC_VECTOR(6 downto 0); -- rising edge after clock 
-	signal colorphase_f: STD_LOGIC_VECTOR(6 downto 0); -- falling edge after clock 
-	                                                 --   measured in 2ns from rising clock 
+	signal colorphase_signal: STD_LOGIC_VECTOR(3 downto 0);  
+	signal colorphase_sample: STD_LOGIC_VECTOR(89 downto 0);
+	
 	signal digit0: STD_LOGIC_VECTOR(3 downto 0);
 	signal digit1: STD_LOGIC_VECTOR(3 downto 0);
 	signal digit2: STD_LOGIC_VECTOR(3 downto 0);
@@ -112,49 +112,57 @@ begin
 	--------------- listen to color pin and determine its phase -----------
    process (clkphasedetector) 
 
+	type T_signalpatterns is array(0 to 15) of std_logic_vector(89 downto 0);	
+	constant signalpatterns : T_signalpatterns := (
+--     0         1         2         3         4         5         6         7         8
+      "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+		"111111111111111111111111111111111111111111111111110000000000000000000000000000000000000000",
+      "111111111111111111111111111111111111111111111111111111111110000000000000000000000000000000",		
+	   "111111111111111111111111111111111111111111111111111111111111111111100000000000000000000000",
+      "001111111111111111111111111111111111111111111111111111111111111111111111111111111111111100",
+      "000000000001111111111111111111111111111111111111111111111111111111111111111111111111111111",
+      "000000000000000000001111111111111111111111111111111111111111111111111111111111111111111111",
+		"000000000000000000000000000000000000011111111111111111111111111111111111111111111111111111",
+      "000000000000000000000000000000000000000000000111111111111111111111111111111111111111111111",		
+	   "000000000000000000000000000000000000000000000000000000111111111111111111111111111111111111",
+		"111000000000000000000000000000000000000000000000000000000000001111111111111111111111111111",
+		"111111100000000000000000000000000000000000000000000000000000000000000000111111111111111111",
+		"111111111111111110000000000000000000000000000000000000000000000000000000000001111111111111",
+		"111111111111111111111111110000000000000000000000000000000000000000000000000000000000011111",
+		"111111111111111111111111111111111100000000000000000000000000000000000000000000000000000000",
+		"111111111111111111111111111111111111111111100000000000000000000000000000000000000000000000"
+	);
+
 	variable in_clk : std_logic;
 	variable prev_clk : std_logic;
-	variable in_col : std_logic;
-	variable prev_col : std_logic;
 	
    variable counter : integer range 0 to 127;  -- 2ns since rising clock
-	
-	variable trigger_samplestart : boolean;   -- pipelined trigger computation
 	variable trigger_sampleend:    boolean;   -- pipelined trigger computation
-	variable trigger_rising : boolean;   -- pipelined trigger computation
-	variable trigger_falling : boolean;   -- pipelined trigger computation
+				
+	variable readbuffer : std_logic_vector(89 downto 0);
+	variable sample : std_logic_vector(89 downto 0);
 	
-		
-	variable rising : integer range 0 to 127;
-	variable falling : integer range 0 to 127;
-	variable out_rising : integer range 0 to 127;
-	variable out_falling : integer range 0 to 127;
-	                                                --   measured in ns from rising clock  
-		
+	variable tmp_matching : integer range 0 to 127;
+	variable tmp_bestmatching : integer range 0 to 127;
+	variable tmp_bestsignal : integer range 0 to 15;
+	
 	begin
 		-- this is an extremely highly clocked circuit to take in the
 		-- samples from 60ns to 240ns after the rising edge of the clock (180ns duration)
 		-- everything is done in 2ns steps
 	   if rising_edge(clkphasedetector) then
 
-			-- respond to the triggers that were set in previous tick
+			-- respond to the trigger that was set in previous tick
 			if trigger_sampleend then
-				out_rising := rising;
-				out_falling := falling;
-			end if;
-			if trigger_rising then
-				rising := counter;
-			end if;
-			if trigger_falling then
-				falling := counter;
+				sample := readbuffer;
 			end if;
 			
-			-- set various trigger points
-			trigger_rising    := (in_col='1' and prev_col='0') or trigger_samplestart;
-			trigger_falling   := (in_col='0' and prev_col='1') or trigger_samplestart;
-			trigger_samplestart := (counter=29);  -- trigger for the sample trigger
+			-- set trigger to snapshot sample in next tick
 			trigger_sampleend := (counter=120);
-			
+
+			-- take in next sample into the shift buffer
+			readbuffer := readbuffer(88 downto 0) & DVID_DATA(6);
+				
 			-- make the counter start from rising clock and then continue
 			if in_clk='1' and prev_clk='0' then 
 				counter := 0;
@@ -162,43 +170,40 @@ begin
 				counter := counter+1;
 			end if;
 				 			
-			-- receive input signals for next cycle
+			-- receive clock signals for next cycle
 			prev_clk := in_clk;
 			in_clk := DVID_CLK;
-			prev_col := in_col;
-			in_col := DVID_DATA(6);
 		end if;
 			
-		-- send output
-		colorphase_r <= std_logic_vector(to_unsigned(out_rising, 7));
-		colorphase_f <= std_logic_vector(to_unsigned(out_falling, 7));
+		-- non-clocked logic to determine the signal according to the
+		-- sampled pattern. 
+		-- this may take same time, but there are 40ns slack before the 
+		-- result will be needed
+
+		-- determine number of matching bits and find the best pattern match
+		tmp_bestsignal := 0;
+		tmp_bestmatching := 0;
+		for s in 0 to 15 loop
+			tmp_matching := 0;
+			for i in 0 to 89 loop
+				if sample(i) = signalpatterns(s)(i) then 
+					tmp_matching:= tmp_matching + 1; 
+				end if;
+			end loop;
+			if tmp_matching > tmp_bestmatching then
+				tmp_bestsignal := s;
+				tmp_bestmatching := tmp_matching;
+			end if;
+		end loop;
+			
+		colorphase_signal <= std_logic_vector(to_unsigned(tmp_bestsignal,4));
+		colorphase_sample <= sample;
 	end process;
 			
 			
    ----------- read video signal and fill data in video ram --------------
 	process (clkpixel)	
 
-	type T_time2signal is array(0 to 127) of integer range 0 to 15;	
-	constant rising2signal : T_time2signal := (
-		 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-       0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-       4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  5,  5,  5,  5,  5,  5, 
-       5,  5,  5,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  6,  7, 
-       7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  8,  8,  8,  8,  8, 
-       8,  8,  8,  9,  9,  9,  9,  9,  9,  9,  9,  9, 10, 10, 10, 10, 
-      10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 12, 12, 12, 
-      12, 12, 12, 13, 13, 13, 13, 13, 13, 13, 13, 13, 14, 14, 14, 14
-	);
-	constant falling2signal : T_time2signal := (
-       0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-       0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-      10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 12, 12, 12, 12, 
-      12, 12, 12, 12, 12, 13, 13, 13, 13, 13, 13, 13, 13, 14, 14, 14, 
-      14, 14, 14, 14, 14, 14, 15, 15, 15, 15, 15, 15, 15, 15,  1,  1, 
-       1,  1,  1,  1,  1,  1,  2,  2,  2,  2,  2,  2,  2,  2,  3,  3, 
-       3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  3,  4,  4,  4, 
-       4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  4,  5,  5,  5
-	);
 	type T_signal2hue is array(0 to 16*2-1) of integer range 0 to 15;	
 	constant signal2hue : T_signal2hue := (
 	     0,  0,
@@ -250,20 +255,20 @@ begin
 	variable in_dvid_sync : std_logic;
 	variable in_dvid_data : STD_LOGIC_VECTOR(11 downto 0);
 	variable prev_dvid_clk : std_logic;
-	variable in_colorphase_r : integer range 0 to 127;
-	variable in_colorphase_f : integer range 0 to 127;
+	variable in_colorphase_signal : integer range 0 to 15;
+	variable in_colorphase_sample : std_logic_vector(89 downto 0);
 	
 	variable out_framestart : std_logic := '0';
 	
 	variable in_lum_0 : std_logic_vector(3 downto 0);
 	variable in_lum_1 : std_logic_vector(3 downto 0);
 
-	variable tmp_phaseoff_r : integer range 0 to 127;
-	variable tmp_phaseoff_f : integer range 0 to 127;
+--	variable tmp_phaseoff_r : integer range 0 to 127;
+--	variable tmp_phaseoff_f : integer range 0 to 127;
 	variable tmp_signal : integer range 0 to 15;
-	variable tmp_hue : integer range 0 to 15;
+ 	variable tmp_hue : integer range 0 to 15;
 	variable tmp_lum : integer range 0 to 15;
-	variable tmp_led : std_logic_vector(17 downto 0);
+--	variable tmp_led : std_logic_vector(17 downto 0);
 	begin	
 		if rising_edge(clkpixel) then
 
@@ -280,18 +285,26 @@ begin
 		  
 			
 		   if y=100 + to_integer(unsigned(SWITCH(1 downto 1))) 
-			and x=to_integer(unsigned(SWITCH(9 downto 2))) then
-				digit0 <= std_logic_vector(to_unsigned(in_colorphase_f mod 16,4));
-				digit1 <= std_logic_vector(to_unsigned(in_colorphase_f / 16,4));
-				digit2 <= std_logic_vector(to_unsigned(in_colorphase_r mod 16,4));
-				digit3 <= std_logic_vector(to_unsigned(in_colorphase_r / 16,4));
-				tmp_led := (others => '0');
-				if BUTTON(0) = '1' then
-				    tmp_led(in_colorphase_r mod 16) := '1';
-			   else 
-				    tmp_led(in_colorphase_f mod 16) := '1';
-			   end if;
-				LED <= tmp_led;
+			and x=to_integer(unsigned(SWITCH(9 downto 2))) 
+			then
+				if BUTTON(0)='0' then
+					LED <= in_colorphase_sample(17 downto 0);	
+				elsif BUTTON(1)='0' then
+					LED <= in_colorphase_sample(35 downto 18);	
+				elsif BUTTON(2)='0' then
+					LED <= in_colorphase_sample(53 downto 36);	
+				elsif BUTTON(3)='0' then
+					LED <= in_colorphase_sample(71 downto 54);	
+				else
+					LED <= in_colorphase_sample(89 downto 72);	
+				end if;		
+--				digit0 <= std_logic_vector(to_unsigned(in_colorphase_change mod 16,4));
+--				digit1 <= std_logic_vector(to_unsigned(in_colorphase_change / 16,4));
+--				digit2 <= "0000";
+--				digit3 <= "000" & in_colorphase_level;
+--				tmp_led := (others => '0');
+--				tmp_led(in_colorphase_change mod 16) := '1';
+--				LED <= tmp_led;
 			end if;
 							
 			-- count length of sync
@@ -320,34 +333,9 @@ begin
 			else 
 					
 				synclength := 0;
-
-				if in_colorphase_r=16#1f# and in_colorphase_f=16#1f# then
-					tmp_signal := 0;
-				elsif in_colorphase_f=16#1f# then 
-					tmp_signal := rising2signal(in_colorphase_r); -- + calibration/8);
-				elsif in_colorphase_r=16#1f# then
-					tmp_signal := falling2signal(in_colorphase_f); -- + calibration/8);
-				else
-					if in_colorphase_r < 16#4c# then
-						tmp_phaseoff_r := 16#4c# - in_colorphase_r;
-					else
-						tmp_phaseoff_r := in_colorphase_r - 16#4c#;
-					end if;
-					if in_colorphase_f < 16#4c# then
-						tmp_phaseoff_f := 16#4c# - in_colorphase_f;
-					else
-						tmp_phaseoff_f := in_colorphase_f - 16#4c#;
-					end if;
-					if tmp_phaseoff_r < tmp_phaseoff_f then
-						tmp_signal := rising2signal(in_colorphase_r); -- + calibration/8);
-					else
-						tmp_signal := falling2signal(in_colorphase_f); -- + calibration/8);
-					end if;
-				end if;
-				
-				
+								
 			   tmp_lum := to_integer(unsigned(in_lum_1));
-				tmp_hue := signal2hue(tmp_signal*2 + (y mod 2));	
+				tmp_hue := signal2hue(in_colorphase_signal*2 + (y mod 2));	
 								
 				pixelvalue := to_unsigned(rgbtable(tmp_hue*16+tmp_lum),12);
 
@@ -364,14 +352,14 @@ begin
 					
 			end if;
 
-		  -- calibrate small temperature dependent deviation on the color burst
-		  if (y mod 2)=1 then
-			  if x=8 then 
-   			  calibration := 16#4f# - in_colorphase_f;
-			  elsif x>8 and x<16 then
-   			  calibration := calibration + (16#4f# - in_colorphase_f);
-           end if;			  
-		  end if;
+--		  -- calibrate small temperature dependent deviation on the color burst
+--		  if (y mod 2)=0 then
+--			  if x=8 then 
+--  			  calibration := 16#30# - in_colorphase_change;
+--			  elsif x>8 and x<16 then
+--   			  calibration := calibration + 16#30# - in_colorphase_change;
+--           end if;			  
+--		  end if;
 
 		  -- detect frame start and notify the HDMI signal generator
 		  if y>=1 and y<10 then
@@ -389,8 +377,8 @@ begin
 		 in_dvid_data := DVID_DATA;
 		 
 		 -- read color phase to be processed in next iteration
-       in_colorphase_r := to_integer(unsigned(colorphase_r));
-       in_colorphase_f := to_integer(unsigned(colorphase_f));
+       in_colorphase_signal:= to_integer(unsigned(colorphase_signal));
+       in_colorphase_sample := colorphase_sample;
 		 
 		end if;   -- rising_edge
 
