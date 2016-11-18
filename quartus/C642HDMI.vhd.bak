@@ -1,0 +1,53 @@
+library ieee;
+use ieee.numeric_std.all;
+use ieee.std_logic_1164.all;
+
+
+entity C642DVideo is	
+	port (
+		-- Input from C64 mod circuit
+		C64_CLK     : in std_logic;
+		C64_LUM     : in std_logic_vector(5 downto 0);
+		C64_COL     : in std_logic_vector(5 downto 0);
+		C64_COL0    : in std_logic_vector(5 downto 0);
+	
+		-- Output to DVideo interface -----
+		DVID_CLK    : out std_logic;
+		DVID_SYNC   : out std_logic;
+		DVID_RGB    : out STD_LOGIC_VECTOR(11 downto 0)
+	);	
+end entity;
+
+
+architecture immediate of C642DVideo is
+	
+begin		
+
+  process (C64_CLK) 
+  variable var_clock : std_logic;
+  variable var_sync : std_logic;
+  variable var_lum  : std_logic_vector(5 downto 0);  
+  variable var_col  : std_logic_vector(5 downto 0);  
+  variable var_col0 : std_logic_vector(5 downto 0);  
+  begin
+	   if rising_edge(DVID_CLK) then
+         var_sync := C64_SYNC;
+         var_lum  := C64_LUM;
+         var_col  := C64_COL;
+         var_col0 := C64_COL0;
+      end if;
+		if falling_edge(DVID_CLK) then
+		   if var_clock='1' then
+			    var_clock := '0'
+		   else
+			    var_clock := '1';
+			end if;
+		end if;
+		
+      DVID_CLK <= var_clock;
+		DVID_SYNC <= var_sync;
+		DVID_RGB <= var_lum(5 downto 2) & var_col(5 downto 2) & var_col0(5 downto 2);
+  end process; 
+
+end immediate;
+

@@ -1,0 +1,3 @@
+PLLCONF_HDMI_sim/PLLCONF_HDMI.vhd
+PLLCONF_HDMI_sim/altera_pll_reconfig/altera_pll_reconfig_top.v
+PLLCONF_HDMI_sim/altera_pll_reconfig/altera_pll_reconfig_core.v

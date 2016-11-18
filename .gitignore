@@ -85,13 +85,13 @@ $RECYCLE.BIN/
 *.lnk
 
 # Quartugs II intermediate files
-quartus/db
-quartus/.qsys_edit
-quartus/devkits
-quartus/greybox_tmp
-quartus/incremental_db
-quartus/output_files
-quartus/output_file.map
+*/db
+*/.qsys_edit
+*/devkits
+*/greybox_tmp
+*/incremental_db
+*/output_files
+*/output_file.map
 
 
 

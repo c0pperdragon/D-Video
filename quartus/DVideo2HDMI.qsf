@@ -39,7 +39,7 @@
 
 set_global_assignment -name FAMILY "Cyclone V"
 set_global_assignment -name DEVICE 5CGXFC5C6F27C7
-set_global_assignment -name TOP_LEVEL_ENTITY DVideo2HDMIMain
+set_global_assignment -name TOP_LEVEL_ENTITY DVideo2HDMI
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 16.0.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "21:44:00  AUGUST 03, 2016"
 set_global_assignment -name LAST_QUARTUS_VERSION 16.0.0
@@ -52,13 +52,6 @@ set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
 set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
-set_global_assignment -name VHDL_FILE DVideo2HDMIMain.vhd
-set_global_assignment -name QIP_FILE PLL_90.qip
-set_global_assignment -name SIP_FILE PLL_90.sip
-set_global_assignment -name QIP_FILE VideoRAM.qip
-set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
-set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
-set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_location_assignment PIN_AE19 -to SWITCH[9]
 set_location_assignment PIN_Y11 -to SWITCH[8]
 set_location_assignment PIN_AC10 -to SWITCH[7]
@@ -99,24 +92,8 @@ set_location_assignment PIN_Y26 -to adv7511_de
 set_location_assignment PIN_U26 -to adv7511_hs
 set_location_assignment PIN_U25 -to adv7511_vs
 set_location_assignment PIN_H12 -to CLK50
-set_location_assignment PIN_T19 -to DVID_CLK
-set_location_assignment PIN_T22 -to DVID_SYNC
-set_location_assignment PIN_T21 -to DVID_DATA[0]
-set_location_assignment PIN_D26 -to DVID_DATA[1]
-set_location_assignment PIN_K25 -to DVID_DATA[2]
-set_location_assignment PIN_E26 -to DVID_DATA[3]
-set_location_assignment PIN_K26 -to DVID_DATA[4]
-set_location_assignment PIN_M26 -to DVID_DATA[5]
-set_location_assignment PIN_M21 -to DVID_DATA[6]
-set_location_assignment PIN_P20 -to DVID_DATA[7]
-set_location_assignment PIN_U19 -to DVID_DATA[8]
-set_location_assignment PIN_U22 -to DVID_DATA[9]
-set_location_assignment PIN_P8 -to DVID_DATA[10]
-set_location_assignment PIN_R8 -to DVID_DATA[11]
-set_global_assignment -name SDC_FILE DVideo2HDMI.sdc
 set_location_assignment PIN_B7 -to adv7511_scl
 set_location_assignment PIN_G11 -to adv7511_sda
-set_global_assignment -name CDF_FILE db/Running.cdf
 set_location_assignment PIN_J10 -to LED[17]
 set_location_assignment PIN_H7 -to LED[16]
 set_location_assignment PIN_K8 -to LED[15]
@@ -135,8 +112,6 @@ set_location_assignment PIN_E9 -to LED[3]
 set_location_assignment PIN_D8 -to LED[2]
 set_location_assignment PIN_K6 -to LED[1]
 set_location_assignment PIN_L7 -to LED[0]
-set_global_assignment -name CDF_FILE Programming.cdf
-set_global_assignment -name VHDL_FILE SevenSegmentDriver.vhd
 set_location_assignment PIN_V19 -to HEX0[0]
 set_location_assignment PIN_V18 -to HEX0[1]
 set_location_assignment PIN_V17 -to HEX0[2]
@@ -166,11 +141,99 @@ set_location_assignment PIN_AC24 -to HEX3[4]
 set_location_assignment PIN_AC23 -to HEX3[5]
 set_location_assignment PIN_AC22 -to HEX3[6]
 set_global_assignment -name PROJECT_IP_REGENERATION_POLICY ALWAYS_REGENERATE_IP
-set_global_assignment -name QIP_FILE PLL_500.qip
-set_global_assignment -name SIP_FILE PLL_500.sip
 set_global_assignment -name AUTO_SHIFT_REGISTER_RECOGNITION OFF
 set_location_assignment PIN_P11 -to BUTTON[0]
 set_location_assignment PIN_P12 -to BUTTON[1]
 set_location_assignment PIN_Y15 -to BUTTON[2]
 set_location_assignment PIN_Y16 -to BUTTON[3]
+set_global_assignment -name VHDL_FILE TestDVideo2HDMI.vhd
+set_global_assignment -name VHDL_FILE SevenSegmentDriver.vhd
+set_global_assignment -name VHDL_FILE DVideo2HDMI.vhd
+set_global_assignment -name QIP_FILE VideoRAM.qip
+set_global_assignment -name SDC_FILE DVideo2HDMI.sdc
+set_global_assignment -name CDF_FILE db/Running.cdf
+set_global_assignment -name CDF_FILE Programming.cdf
+set_global_assignment -name QIP_FILE PLL_HDMI.qip
+set_global_assignment -name SIP_FILE PLL_HDMI.sip
+set_global_assignment -name QIP_FILE PLLCONF_HDMI.qip
+set_global_assignment -name SIP_FILE PLLCONF_HDMI.sip
+set_global_assignment -name QIP_FILE PLL_119_5.qip
+set_global_assignment -name SIP_FILE PLL_119_5.sip
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_instance_assignment -name IO_STANDARD "1.2-V HSUL" -to BUTTON[3]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to BUTTON[2]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to BUTTON[1]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to BUTTON[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to RST
+set_instance_assignment -name IO_STANDARD "1.2 V" -to HEX0[6]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to HEX0[5]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to HEX0[4]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to HEX0[3]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to HEX0[2]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to HEX0[1]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to HEX0[0]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to HEX1[6]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to HEX1[5]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to HEX1[4]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to HEX1[3]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to HEX1[2]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to HEX1[1]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to HEX1[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to HEX2[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to HEX2[5]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to HEX2[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to HEX2[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to HEX2[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to HEX2[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to HEX2[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to HEX3[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to HEX3[5]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to HEX3[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to HEX3[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to HEX3[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to HEX3[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to HEX3[0]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to SWITCH[9]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to SWITCH[8]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to SWITCH[7]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to SWITCH[6]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to SWITCH[5]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to SWITCH[4]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to SWITCH[3]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to SWITCH[2]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to SWITCH[1]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to SWITCH[0]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to SWITCH
+set_location_assignment PIN_T21 -to DVID_RGB[0]
+set_location_assignment PIN_D26 -to DVID_RGB[1]
+set_location_assignment PIN_K25 -to DVID_RGB[2]
+set_location_assignment PIN_E26 -to DVID_RGB[3]
+set_location_assignment PIN_K26 -to DVID_RGB[4]
+set_location_assignment PIN_M26 -to DVID_RGB[5]
+set_location_assignment PIN_M21 -to DVID_RGB[6]
+set_location_assignment PIN_P20 -to DVID_RGB[7]
+set_location_assignment PIN_T22 -to DVID_SYNC
+set_location_assignment PIN_T19 -to DVID_CLK
+set_location_assignment PIN_U19 -to DVID_RGB[8]
+set_location_assignment PIN_U22 -to DVID_RGB[9]
+set_location_assignment PIN_P8 -to DVID_RGB[10]
+set_location_assignment PIN_R8 -to DVID_RGB[11]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_CLK
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[11]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[10]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to CLK50
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[9]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[8]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[7]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[5]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_SYNC
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

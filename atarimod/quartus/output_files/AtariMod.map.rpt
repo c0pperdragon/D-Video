@@ -1,0 +1,237 @@
+Analysis & Synthesis report for AtariMod
+Fri Nov 18 23:13:01 2016
+Quartus Prime Version 16.0.0 Build 211 04/27/2016 SJ Lite Edition
+
+
+---------------------
+; Table of Contents ;
+---------------------
+  1. Legal Notice
+  2. Analysis & Synthesis Summary
+  3. Analysis & Synthesis Settings
+  4. Parallel Compilation
+  5. Analysis & Synthesis Source Files Read
+  6. Analysis & Synthesis Resource Usage Summary
+  7. Analysis & Synthesis Resource Utilization by Entity
+  8. General Register Statistics
+  9. Analysis & Synthesis Messages
+
+
+
+----------------
+; Legal Notice ;
+----------------
+Copyright (C) 1991-2016 Altera Corporation. All rights reserved.
+Your use of Altera Corporation's design tools, logic functions 
+and other software and tools, and its AMPP partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Altera Program License 
+Subscription Agreement, the Altera Quartus Prime License Agreement,
+the Altera MegaCore Function License Agreement, or other 
+applicable license agreement, including, without limitation, 
+that your use is for the sole purpose of programming logic 
+devices manufactured by Altera and sold by Altera or its 
+authorized distributors.  Please refer to the applicable 
+agreement for further details.
+
+
+
++---------------------------------------------------------------------------+
+; Analysis & Synthesis Summary                                              ;
++-----------------------------+---------------------------------------------+
+; Analysis & Synthesis Status ; Successful - Fri Nov 18 23:13:01 2016       ;
+; Quartus Prime Version       ; 16.0.0 Build 211 04/27/2016 SJ Lite Edition ;
+; Revision Name               ; AtariMod                                    ;
+; Top-level Entity Name       ; TestPattern                                 ;
+; Family                      ; MAX V                                       ;
+; Total logic elements        ; 69                                          ;
+; Total pins                  ; 16                                          ;
+; Total virtual pins          ; 0                                           ;
+; UFM blocks                  ; 0 / 1 ( 0 % )                               ;
++-----------------------------+---------------------------------------------+
+
+
++----------------------------------------------------------------------------------------------------------------------+
+; Analysis & Synthesis Settings                                                                                        ;
++----------------------------------------------------------------------------+--------------------+--------------------+
+; Option                                                                     ; Setting            ; Default Value      ;
++----------------------------------------------------------------------------+--------------------+--------------------+
+; Device                                                                     ; 5M570ZT100C5       ;                    ;
+; Top-level entity name                                                      ; TestPattern        ; AtariMod           ;
+; Family name                                                                ; MAX V              ; Cyclone V          ;
+; Use smart compilation                                                      ; Off                ; Off                ;
+; Enable parallel Assembler and TimeQuest Timing Analyzer during compilation ; On                 ; On                 ;
+; Enable compact report table                                                ; Off                ; Off                ;
+; Restructure Multiplexers                                                   ; Auto               ; Auto               ;
+; Create Debugging Nodes for IP Cores                                        ; Off                ; Off                ;
+; Preserve fewer node names                                                  ; On                 ; On                 ;
+; Disable OpenCore Plus hardware evaluation                                  ; Off                ; Off                ;
+; Verilog Version                                                            ; Verilog_2001       ; Verilog_2001       ;
+; VHDL Version                                                               ; VHDL_1993          ; VHDL_1993          ;
+; State Machine Processing                                                   ; Auto               ; Auto               ;
+; Safe State Machine                                                         ; Off                ; Off                ;
+; Extract Verilog State Machines                                             ; On                 ; On                 ;
+; Extract VHDL State Machines                                                ; On                 ; On                 ;
+; Ignore Verilog initial constructs                                          ; Off                ; Off                ;
+; Iteration limit for constant Verilog loops                                 ; 5000               ; 5000               ;
+; Iteration limit for non-constant Verilog loops                             ; 250                ; 250                ;
+; Add Pass-Through Logic to Inferred RAMs                                    ; On                 ; On                 ;
+; Infer RAMs from Raw Logic                                                  ; On                 ; On                 ;
+; Parallel Synthesis                                                         ; On                 ; On                 ;
+; NOT Gate Push-Back                                                         ; On                 ; On                 ;
+; Power-Up Don't Care                                                        ; On                 ; On                 ;
+; Remove Redundant Logic Cells                                               ; Off                ; Off                ;
+; Remove Duplicate Registers                                                 ; On                 ; On                 ;
+; Ignore CARRY Buffers                                                       ; Off                ; Off                ;
+; Ignore CASCADE Buffers                                                     ; Off                ; Off                ;
+; Ignore GLOBAL Buffers                                                      ; Off                ; Off                ;
+; Ignore ROW GLOBAL Buffers                                                  ; Off                ; Off                ;
+; Ignore LCELL Buffers                                                       ; Off                ; Off                ;
+; Ignore SOFT Buffers                                                        ; On                 ; On                 ;
+; Limit AHDL Integers to 32 Bits                                             ; Off                ; Off                ;
+; Optimization Technique                                                     ; Balanced           ; Balanced           ;
+; Carry Chain Length                                                         ; 70                 ; 70                 ;
+; Auto Carry Chains                                                          ; On                 ; On                 ;
+; Auto Open-Drain Pins                                                       ; On                 ; On                 ;
+; Perform WYSIWYG Primitive Resynthesis                                      ; Off                ; Off                ;
+; Auto Shift Register Replacement                                            ; Auto               ; Auto               ;
+; Allow Shift Register Merging across Hierarchies                            ; Auto               ; Auto               ;
+; Auto Clock Enable Replacement                                              ; On                 ; On                 ;
+; Allow Synchronous Control Signals                                          ; On                 ; On                 ;
+; Force Use of Synchronous Clear Signals                                     ; Off                ; Off                ;
+; Auto Resource Sharing                                                      ; Off                ; Off                ;
+; Use LogicLock Constraints during Resource Balancing                        ; On                 ; On                 ;
+; Ignore translate_off and synthesis_off directives                          ; Off                ; Off                ;
+; Report Parameter Settings                                                  ; On                 ; On                 ;
+; Report Source Assignments                                                  ; On                 ; On                 ;
+; Report Connectivity Checks                                                 ; On                 ; On                 ;
+; Ignore Maximum Fan-Out Assignments                                         ; Off                ; Off                ;
+; Synchronization Register Chain Length                                      ; 2                  ; 2                  ;
+; PowerPlay Power Optimization During Synthesis                              ; Normal compilation ; Normal compilation ;
+; HDL message level                                                          ; Level2             ; Level2             ;
+; Suppress Register Optimization Related Messages                            ; Off                ; Off                ;
+; Number of Removed Registers Reported in Synthesis Report                   ; 5000               ; 5000               ;
+; Number of Swept Nodes Reported in Synthesis Report                         ; 5000               ; 5000               ;
+; Number of Inverted Registers Reported in Synthesis Report                  ; 100                ; 100                ;
+; Clock MUX Protection                                                       ; On                 ; On                 ;
+; Block Design Naming                                                        ; Auto               ; Auto               ;
+; Synthesis Effort                                                           ; Auto               ; Auto               ;
+; Shift Register Replacement - Allow Asynchronous Clear Signal               ; On                 ; On                 ;
+; Analysis & Synthesis Message Level                                         ; Medium             ; Medium             ;
+; Disable Register Merging Across Hierarchies                                ; Auto               ; Auto               ;
+; Synthesis Seed                                                             ; 1                  ; 1                  ;
++----------------------------------------------------------------------------+--------------------+--------------------+
+
+
+Parallel compilation was disabled, but you have multiple processors available. Enable parallel compilation to reduce compilation time.
++-------------------------------------+
+; Parallel Compilation                ;
++----------------------------+--------+
+; Processors                 ; Number ;
++----------------------------+--------+
+; Number detected on machine ; 2      ;
+; Maximum allowed            ; 1      ;
++----------------------------+--------+
+
+
++--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Analysis & Synthesis Source Files Read                                                                                                                       ;
++----------------------------------+-----------------+-----------------+-----------------------------------------------------------------------------+---------+
+; File Name with User-Entered Path ; Used in Netlist ; File Type       ; File Name with Absolute Path                                                ; Library ;
++----------------------------------+-----------------+-----------------+-----------------------------------------------------------------------------+---------+
+; TestPattern.vhd                  ; yes             ; User VHDL File  ; C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/TestPattern.vhd ;         ;
++----------------------------------+-----------------+-----------------+-----------------------------------------------------------------------------+---------+
+
+
++-------------------------------------------------------+
+; Analysis & Synthesis Resource Usage Summary           ;
++---------------------------------------------+---------+
+; Resource                                    ; Usage   ;
++---------------------------------------------+---------+
+; Total logic elements                        ; 69      ;
+;     -- Combinational with no register       ; 33      ;
+;     -- Register only                        ; 0       ;
+;     -- Combinational with a register        ; 36      ;
+;                                             ;         ;
+; Logic element usage by number of LUT inputs ;         ;
+;     -- 4 input functions                    ; 24      ;
+;     -- 3 input functions                    ; 15      ;
+;     -- 2 input functions                    ; 27      ;
+;     -- 1 input functions                    ; 3       ;
+;     -- 0 input functions                    ; 0       ;
+;                                             ;         ;
+; Logic elements by mode                      ;         ;
+;     -- normal mode                          ; 50      ;
+;     -- arithmetic mode                      ; 19      ;
+;     -- qfbk mode                            ; 0       ;
+;     -- register cascade mode                ; 0       ;
+;     -- synchronous clear/load mode          ; 22      ;
+;     -- asynchronous clear/load mode         ; 0       ;
+;                                             ;         ;
+; Total registers                             ; 36      ;
+; Total logic cells in carry chains           ; 22      ;
+; I/O pins                                    ; 16      ;
+; Maximum fan-out node                        ; out_clk ;
+; Maximum fan-out                             ; 33      ;
+; Total fan-out                               ; 279     ;
+; Average fan-out                             ; 3.28    ;
++---------------------------------------------+---------+
+
+
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Analysis & Synthesis Resource Utilization by Entity                                                                                                                                                                                ;
++----------------------------+-------------+--------------+------------+------+--------------+--------------+-------------------+------------------+-----------------+------------+---------------------+-------------+--------------+
+; Compilation Hierarchy Node ; Logic Cells ; LC Registers ; UFM Blocks ; Pins ; Virtual Pins ; LUT-Only LCs ; Register-Only LCs ; LUT/Register LCs ; Carry Chain LCs ; Packed LCs ; Full Hierarchy Name ; Entity Name ; Library Name ;
++----------------------------+-------------+--------------+------------+------+--------------+--------------+-------------------+------------------+-----------------+------------+---------------------+-------------+--------------+
+; |TestPattern               ; 69 (69)     ; 36           ; 0          ; 16   ; 0            ; 33 (33)      ; 0 (0)             ; 36 (36)          ; 22 (22)         ; 0 (0)      ; |TestPattern        ; TestPattern ; work         ;
++----------------------------+-------------+--------------+------------+------+--------------+--------------+-------------------+------------------+-----------------+------------+---------------------+-------------+--------------+
+Note: For table entries with two numbers listed, the numbers in parentheses indicate the number of resources of the given type used by the specific entity alone. The numbers listed outside of parentheses indicate the total resources of the given type used by the specific entity and all of its sub-entities in the hierarchy.
+
+
++------------------------------------------------------+
+; General Register Statistics                          ;
++----------------------------------------------+-------+
+; Statistic                                    ; Value ;
++----------------------------------------------+-------+
+; Total registers                              ; 36    ;
+; Number of registers using Synchronous Clear  ; 22    ;
+; Number of registers using Synchronous Load   ; 0     ;
+; Number of registers using Asynchronous Clear ; 0     ;
+; Number of registers using Asynchronous Load  ; 0     ;
+; Number of registers using Clock Enable       ; 9     ;
+; Number of registers using Preset             ; 0     ;
++----------------------------------------------+-------+
+
+
++-------------------------------+
+; Analysis & Synthesis Messages ;
++-------------------------------+
+Info: *******************************************************************
+Info: Running Quartus Prime Analysis & Synthesis
+    Info: Version 16.0.0 Build 211 04/27/2016 SJ Lite Edition
+    Info: Processing started: Fri Nov 18 23:11:46 2016
+Info: Command: quartus_map --read_settings_files=on --write_settings_files=off AtariMod -c AtariMod
+Warning (20028): Parallel compilation is not licensed and has been disabled
+Info (12021): Found 2 design units, including 1 entities, in source file testpattern.vhd
+    Info (12022): Found design unit 1: TestPattern-immediate File: C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/TestPattern.vhd Line: 22
+    Info (12023): Found entity 1: TestPattern File: C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/TestPattern.vhd Line: 9
+Info (12021): Found 2 design units, including 1 entities, in source file gtia.vhd
+    Info (12022): Found design unit 1: GTIA-immediate File: C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/GTIA.vhd Line: 25
+    Info (12023): Found entity 1: GTIA File: C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/GTIA.vhd Line: 6
+Info (12127): Elaborating entity "TestPattern" for the top level hierarchy
+Warning (10542): VHDL Variable Declaration warning at TestPattern.vhd(48): used initial value expression for variable "totallines" because variable was never assigned a value File: C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/TestPattern.vhd Line: 48
+Warning (21074): Design contains 1 input pin(s) that do not drive logic
+    Warning (15610): No output dependent on input pin "RST" File: C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/TestPattern.vhd Line: 13
+Info (21057): Implemented 85 device resources after synthesis - the final resource count might be different
+    Info (21058): Implemented 2 input pins
+    Info (21059): Implemented 14 output pins
+    Info (21061): Implemented 69 logic cells
+Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 4 warnings
+    Info: Peak virtual memory: 832 megabytes
+    Info: Processing ended: Fri Nov 18 23:13:01 2016
+    Info: Elapsed time: 00:01:15
+    Info: Total CPU time (on all processors): 00:01:37
+
+

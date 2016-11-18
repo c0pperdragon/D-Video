@@ -1,0 +1,228 @@
+Design Assistant report for AtariMod
+Thu Oct 20 19:32:22 2016
+Quartus Prime Version 16.0.0 Build 211 04/27/2016 SJ Lite Edition
+
+
+---------------------
+; Table of Contents ;
+---------------------
+  1. Legal Notice
+  2. Design Assistant Summary
+  3. Design Assistant Settings
+  4. Information only Violations
+  5. Design Assistant Messages
+
+
+
+----------------
+; Legal Notice ;
+----------------
+Copyright (C) 1991-2016 Altera Corporation. All rights reserved.
+Your use of Altera Corporation's design tools, logic functions 
+and other software and tools, and its AMPP partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Altera Program License 
+Subscription Agreement, the Altera Quartus Prime License Agreement,
+the Altera MegaCore Function License Agreement, or other 
+applicable license agreement, including, without limitation, 
+that your use is for the sole purpose of programming logic 
+devices manufactured by Altera and sold by Altera or its 
+authorized distributors.  Please refer to the applicable 
+agreement for further details.
+
+
+
++-------------------------------------------------------------------------+
+; Design Assistant Summary                                                ;
++-----------------------------------+-------------------------------------+
+; Design Assistant Status           ; Analyzed - Thu Oct 20 19:32:22 2016 ;
+; Revision Name                     ; AtariMod                            ;
+; Top-level Entity Name             ; AtariMod                            ;
+; Family                            ; MAX V                               ;
+; Total Critical Violations         ; 0                                   ;
+; Total High Violations             ; 0                                   ;
+; Total Medium Violations           ; 0                                   ;
+; Total Information only Violations ; 63                                  ;
+; - Rule T101                       ; 13                                  ;
+; - Rule T102                       ; 50                                  ;
++-----------------------------------+-------------------------------------+
+
+
++------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Design Assistant Settings                                                                                                                                                                ;
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+----+
+; Option                                                                                                                                                               ; Setting      ; To ;
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+----+
+; Design Assistant mode                                                                                                                                                ; Post-Fitting ;    ;
+; Threshold value for clock net not mapped to clock spines rule                                                                                                        ; 25           ;    ;
+; Minimum number of clock port feed by gated clocks                                                                                                                    ; 30           ;    ;
+; Minimum number of node fan-out                                                                                                                                       ; 30           ;    ;
+; Maximum number of nodes to report                                                                                                                                    ; 50           ;    ;
+; Rule C101: Gated clock should be implemented according to the Altera standard scheme                                                                                 ; On           ;    ;
+; Rule C102: Logic cell should not be used to generate an inverted clock signal                                                                                        ; On           ;    ;
+; Rule C103: Gated clock does not feed at least a pre-defined number of clock ports to effectively save power                                                          ; On           ;    ;
+; Rule C104: Clock signal source should drive only clock input ports                                                                                                   ; On           ;    ;
+; Rule C105: Clock signal should be a global signal                                                                                                                    ; On           ;    ;
+; Rule C106: Clock signal source should not drive registers triggered by different clock edges                                                                         ; On           ;    ;
+; Rule R101: Combinational logic used as a reset signal should be synchronized                                                                                         ; On           ;    ;
+; Rule R102: External reset signals should be synchronized using two cascaded registers                                                                                ; On           ;    ;
+; Rule R103: External reset signal should be correctly synchronized                                                                                                    ; On           ;    ;
+; Rule R104: The reset signal that is generated in one clock domain and used in another clock domain should be correctly synchronized                                  ; On           ;    ;
+; Rule R105: The reset signal that is generated in one clock domain and used in another clock domain should be synchronized                                            ; On           ;    ;
+; Rule T101: Nodes with more than the specified number of fan-outs                                                                                                     ; On           ;    ;
+; Rule T102: Top nodes with the highest number of fan-outs                                                                                                             ; On           ;    ;
+; Rule A101: Design should not contain combinational loops                                                                                                             ; On           ;    ;
+; Rule A102: Register output should not drive its own control signal directly or through combinational logic                                                           ; On           ;    ;
+; Rule A103: Design should not contain delay chains                                                                                                                    ; On           ;    ;
+; Rule A104: Design should not contain ripple clock structures                                                                                                         ; On           ;    ;
+; Rule A105: Pulses should not be implemented asynchronously                                                                                                           ; On           ;    ;
+; Rule A106: Multiple pulses should not be generated in design                                                                                                         ; On           ;    ;
+; Rule A107: Design should not contain SR latches                                                                                                                      ; On           ;    ;
+; Rule A108: Design should not contain latches                                                                                                                         ; On           ;    ;
+; Rule S101: Output enable and input of the same tri-state node should not be driven by same signal source                                                             ; On           ;    ;
+; Rule S102: Synchronous port and asynchronous port of the same register should not be driven by the same signal source                                                ; On           ;    ;
+; Rule S103: More than one asynchronous port of a register should not be driven by the same signal source                                                              ; On           ;    ;
+; Rule S104: Clock port and any other port of a register should not be driven by the same signal source                                                                ; On           ;    ;
+; Rule D101: Data bits are not synchronized when transferred between asynchronous clock domains                                                                        ; On           ;    ;
+; Rule D102: Multiple data bits that are transferred across asynchronous clock domains are synchronized, but not all bits may be aligned in the receiving clock domain ; On           ;    ;
+; Rule D103: Data bits are not correctly synchronized when transferred between asynchronous clock domains                                                              ; On           ;    ;
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------+----+
+
+
++------------------------------------------------------------------------------------------------------------------+
+; Information only Violations                                                                                      ;
++------------------------------------------------------------------+-------------------------------------+---------+
+; Rule name                                                        ; Name                                ; Fan-Out ;
++------------------------------------------------------------------+-------------------------------------+---------+
+; Rule T101: Nodes with more than the specified number of fan-outs ; CLK200                              ; 61      ;
+; Rule T101: Nodes with more than the specified number of fan-outs ; Atari2DVideo:part1|hue[1]           ; 166     ;
+; Rule T101: Nodes with more than the specified number of fan-outs ; Atari2DVideo:part1|hue[0]           ; 137     ;
+; Rule T101: Nodes with more than the specified number of fan-outs ; Atari2DVideo:part1|hue[2]           ; 144     ;
+; Rule T101: Nodes with more than the specified number of fan-outs ; Atari2DVideo:part1|hue[3]           ; 67      ;
+; Rule T101: Nodes with more than the specified number of fan-outs ; Atari2DVideo:part1|lum0[0]          ; 71      ;
+; Rule T101: Nodes with more than the specified number of fan-outs ; Atari2DVideo:part1|lum0[1]          ; 66      ;
+; Rule T101: Nodes with more than the specified number of fan-outs ; Atari2DVideo:part1|lum0[3]          ; 43      ;
+; Rule T101: Nodes with more than the specified number of fan-outs ; Atari2DVideo:part1|lum0[2]          ; 50      ;
+; Rule T101: Nodes with more than the specified number of fan-outs ; Atari2DVideo:part1|lum1[1]          ; 66      ;
+; Rule T101: Nodes with more than the specified number of fan-outs ; Atari2DVideo:part1|lum1[0]          ; 70      ;
+; Rule T101: Nodes with more than the specified number of fan-outs ; Atari2DVideo:part1|lum1[2]          ; 50      ;
+; Rule T101: Nodes with more than the specified number of fan-outs ; Atari2DVideo:part1|lum1[3]          ; 44      ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|hue[1]           ; 166     ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|hue[2]           ; 144     ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|hue[0]           ; 137     ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|lum0[0]          ; 71      ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|lum1[0]          ; 70      ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|hue[3]           ; 67      ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|lum0[1]          ; 66      ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|lum1[1]          ; 66      ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; CLK200                              ; 61      ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|lum1[2]          ; 50      ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|lum0[2]          ; 50      ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|lum1[3]          ; 44      ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|lum0[3]          ; 43      ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|toggletime[5]    ; 25      ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|toggletime[1]    ; 24      ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|horizontal[0]    ; 20      ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|toggletime[2]    ; 19      ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|Equal3~0         ; 19      ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|col_at_start     ; 17      ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|toggletime[4]    ; 16      ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|toggletime[0]    ; 15      ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|toggletime[3]    ; 14      ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|out_sync~0       ; 13      ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|counter[4]       ; 10      ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|sync             ; 9       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|counter[3]       ; 9       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|Equal4~0         ; 9       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|counter[0]       ; 9       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|horizontal[0]~18 ; 8       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|Mux7~6           ; 8       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|counter[1]       ; 8       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|counter[5]       ; 8       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|clockdelay[3]    ; 7       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|counter~14       ; 7       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|counter[2]       ; 7       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|clockdelay[0]    ; 7       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|isoddline        ; 7       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|phase[1]         ; 7       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|phase[3]         ; 7       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|counter[1]~15    ; 6       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|process_0~0      ; 6       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|Equal6~0         ; 6       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|counter~13       ; 6       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|toggletime~6     ; 6       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|phase[0]         ; 6       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|Mux7~5           ; 6       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|phase[2]         ; 6       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|Mux23~18         ; 5       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|Mux16~0          ; 4       ;
+; Rule T102: Top nodes with the highest number of fan-outs         ; Atari2DVideo:part1|hue[3]~5         ; 4       ;
++------------------------------------------------------------------+-------------------------------------+---------+
+
+
++---------------------------+
+; Design Assistant Messages ;
++---------------------------+
+Info: *******************************************************************
+Info: Running Quartus Prime Design Assistant
+    Info: Version 16.0.0 Build 211 04/27/2016 SJ Lite Edition
+    Info: Processing started: Thu Oct 20 19:32:19 2016
+Info: Command: quartus_drc --read_settings_files=on --write_settings_files=off AtariMod -c AtariMod
+Critical Warning (332012): Synopsys Design Constraints File file not found: 'AtariMod.sdc'. A Synopsys Design Constraints File is required by the TimeQuest Timing Analyzer to get proper timing constraints. Without it, the Compiler will not properly optimize the design.
+Info (332144): No user constrained base clocks found in the design
+Info (308046): (Information) Rule T101: Nodes with more than the specified number of fan-outs. (Value defined:30). Found 13 node(s) with highest fan-out.
+    Info (308011): Node  "CLK200" File: C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/AtariMod.vhd Line: 8
+    Info (308011): Node  "Atari2DVideo:part1|hue[1]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|hue[0]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|hue[2]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|hue[3]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|lum0[0]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|lum0[1]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|lum0[3]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|lum0[2]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|lum1[1]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|lum1[0]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|lum1[2]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|lum1[3]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+Info (308044): (Information) Rule T102: Top nodes with the highest number of fan-outs. (Value defined:50). Found 50 node(s) with highest fan-out.
+    Info (308011): Node  "Atari2DVideo:part1|hue[1]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|hue[2]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|hue[0]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|lum0[0]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|lum1[0]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|hue[3]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|lum0[1]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|lum1[1]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "CLK200" File: C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/AtariMod.vhd Line: 8
+    Info (308011): Node  "Atari2DVideo:part1|lum1[2]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|lum0[2]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|lum1[3]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|lum0[3]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|toggletime[5]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|toggletime[1]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|horizontal[0]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|toggletime[2]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|Equal3~0" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 152
+    Info (308011): Node  "Atari2DVideo:part1|col_at_start" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 119
+    Info (308011): Node  "Atari2DVideo:part1|toggletime[4]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|toggletime[0]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|toggletime[3]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|out_sync~0" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|counter[4]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|sync" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 125
+    Info (308011): Node  "Atari2DVideo:part1|counter[3]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|Equal4~0" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 157
+    Info (308011): Node  "Atari2DVideo:part1|counter[0]" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|horizontal[0]~18" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 136
+    Info (308011): Node  "Atari2DVideo:part1|Mux7~6" File: C:/Users/Reinhard/Documents/GitHub/D-Video/quartus/Atari2DVideo.vhd Line: 153
+    Info (308002): Truncated list of Design Assistant messages to 30 messages. Go to sections under Design Assistant section of Compilation Report for complete lists of Design Assistant messages generated.
+Info (308007): Design Assistant information: finished post-fitting analysis of current design -- generated 63 information messages and 0 warning messages
+Info: Quartus Prime Design Assistant was successful. 0 errors, 1 warning
+    Info: Peak virtual memory: 701 megabytes
+    Info: Processing ended: Thu Oct 20 19:32:22 2016
+    Info: Elapsed time: 00:00:03
+    Info: Total CPU time (on all processors): 00:00:03
+
+

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simPackage>
+ <file
+   path="PLLCONF_HDMI_sim/altera_pll_reconfig/altera_pll_reconfig_top.v"
+   type="VERILOG"
+   library="PLLCONF_HDMI" />
+ <file
+   path="PLLCONF_HDMI_sim/altera_pll_reconfig/altera_pll_reconfig_core.v"
+   type="VERILOG"
+   library="PLLCONF_HDMI" />
+ <file path="PLLCONF_HDMI_sim/PLLCONF_HDMI.vhd" type="VHDL" />
+ <topLevel name="PLLCONF_HDMI" />
+ <deviceFamily name="cyclonev" />
+</simPackage>
