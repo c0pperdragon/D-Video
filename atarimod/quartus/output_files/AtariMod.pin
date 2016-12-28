@@ -64,39 +64,39 @@ CHIP  "AtariMod"  ASSIGNED TO AN: 5M570ZT100C5
 Pin Name/Usage               : Location  : Dir.   : I/O Standard      : Voltage : I/O Bank  : User Assignment
 -------------------------------------------------------------------------------------------------------------
 GND*                         : 1         :        :                   :         : 2         :                
-GND*                         : 2         :        :                   :         : 1         :                
-GND*                         : 3         :        :                   :         : 1         :                
-GND*                         : 4         :        :                   :         : 1         :                
-GND*                         : 5         :        :                   :         : 1         :                
-GND*                         : 6         :        :                   :         : 1         :                
-GND*                         : 7         :        :                   :         : 1         :                
+A[4]                         : 2         : input  : 3.3-V LVTTL       :         : 1         : Y              
+AN[2]                        : 3         : input  : 3.3-V LVTTL       :         : 1         : Y              
+A[3]                         : 4         : input  : 3.3-V LVTTL       :         : 1         : Y              
+AN[0]                        : 5         : input  : 3.3-V LVTTL       :         : 1         : Y              
+A[2]                         : 6         : input  : 3.3-V LVTTL       :         : 1         : Y              
+AN[1]                        : 7         : input  : 3.3-V LVTTL       :         : 1         : Y              
 GND                          : 8         : gnd    :                   :         :           :                
 VCCIO1                       : 9         : power  :                   : 3.3V    : 1         :                
 GND                          : 10        : gnd    :                   :         :           :                
 GND                          : 11        : gnd    :                   :         :           :                
-CLK100                       : 12        : input  : 3.3-V LVTTL       :         : 1         : Y              
+GND*                         : 12        :        :                   :         : 1         :                
 VCCINT                       : 13        : power  :                   : 1.8V    :           :                
 GND*                         : 14        :        :                   :         : 1         :                
-GND*                         : 15        :        :                   :         : 1         :                
-GND*                         : 16        :        :                   :         : 1         :                
-GND*                         : 17        :        :                   :         : 1         :                
-GND*                         : 18        :        :                   :         : 1         :                
-GND*                         : 19        :        :                   :         : 1         :                
-GND*                         : 20        :        :                   :         : 1         :                
-GND*                         : 21        :        :                   :         : 1         :                
+D[1]                         : 15        : input  : 3.3-V LVTTL       :         : 1         : Y              
+A[1]                         : 16        : input  : 3.3-V LVTTL       :         : 1         : Y              
+D[0]                         : 17        : input  : 3.3-V LVTTL       :         : 1         : Y              
+A[0]                         : 18        : input  : 3.3-V LVTTL       :         : 1         : Y              
+D[2]                         : 19        : input  : 3.3-V LVTTL       :         : 1         : Y              
+D[5]                         : 20        : input  : 3.3-V LVTTL       :         : 1         : Y              
+D[3]                         : 21        : input  : 3.3-V LVTTL       :         : 1         : Y              
 TMS                          : 22        : input  :                   :         : 1         :                
 TDI                          : 23        : input  :                   :         : 1         :                
 TCK                          : 24        : input  :                   :         : 1         :                
 TDO                          : 25        : output :                   :         : 1         :                
-GND*                         : 26        :        :                   :         : 1         :                
-GND*                         : 27        :        :                   :         : 1         :                
-GND*                         : 28        :        :                   :         : 1         :                
-GND*                         : 29        :        :                   :         : 1         :                
-GND*                         : 30        :        :                   :         : 1         :                
+D[6]                         : 26        : input  : 3.3-V LVTTL       :         : 1         : Y              
+CS                           : 27        : input  : 3.3-V LVTTL       :         : 1         : Y              
+D[7]                         : 28        : input  : 3.3-V LVTTL       :         : 1         : Y              
+W                            : 29        : input  : 3.3-V LVTTL       :         : 1         : Y              
+D[4]                         : 30        : input  : 3.3-V LVTTL       :         : 1         : Y              
 VCCIO1                       : 31        : power  :                   : 3.3V    : 1         :                
 GND                          : 32        : gnd    :                   :         :           :                
 GND*                         : 33        :        :                   :         : 1         :                
-RST                          : 34        : input  : 3.3-V LVTTL       :         : 1         : N              
+GND*                         : 34        :        :                   :         : 1         :                
 GND*                         : 35        :        :                   :         : 1         :                
 GND*                         : 36        :        :                   :         : 1         :                
 GND                          : 37        : gnd    :                   :         :           :                
@@ -123,43 +123,43 @@ GND*                         : 57        :        :                   :         
 GND*                         : 58        :        :                   :         : 2         :                
 VCCIO2                       : 59        : power  :                   : 3.3V    : 2         :                
 GND                          : 60        : gnd    :                   :         :           :                
-DVID_RGB[0]                  : 61        : output : 3.3-V LVTTL       :         : 2         : Y              
-GND*                         : 62        :        :                   :         : 2         :                
+DVID_RGB[0]                  : 61        : output : 3.3-V LVCMOS      :         : 2         : Y              
+CLK                          : 62        : input  : 3.3V Schmitt Trigger Input :         : 2         : Y              
 VCCINT                       : 63        : power  :                   : 1.8V    :           :                
-GND*                         : 64        :        :                   :         : 2         :                
+PHI2                         : 64        : input  : 3.3-V LVTTL       :         : 2         : Y              
 GND                          : 65        : gnd    :                   :         :           :                
 GND*                         : 66        :        :                   :         : 2         :                
-DVID_RGB[1]                  : 67        : output : 3.3-V LVTTL       :         : 2         : Y              
+DVID_RGB[1]                  : 67        : output : 3.3-V LVCMOS      :         : 2         : Y              
 GND*                         : 68        :        :                   :         : 2         :                
-DVID_RGB[2]                  : 69        : output : 3.3-V LVTTL       :         : 2         : Y              
+DVID_RGB[2]                  : 69        : output : 3.3-V LVCMOS      :         : 2         : Y              
 GND*                         : 70        :        :                   :         : 2         :                
-DVID_RGB[3]                  : 71        : output : 3.3-V LVTTL       :         : 2         : Y              
+DVID_RGB[3]                  : 71        : output : 3.3-V LVCMOS      :         : 2         : Y              
 GND*                         : 72        :        :                   :         : 2         :                
-DVID_RGB[4]                  : 73        : output : 3.3-V LVTTL       :         : 2         : Y              
+DVID_RGB[4]                  : 73        : output : 3.3-V LVCMOS      :         : 2         : Y              
 GND*                         : 74        :        :                   :         : 2         :                
-DVID_RGB[5]                  : 75        : output : 3.3-V LVTTL       :         : 2         : Y              
+DVID_RGB[5]                  : 75        : output : 3.3-V LVCMOS      :         : 2         : Y              
 GND*                         : 76        :        :                   :         : 2         :                
-DVID_RGB[6]                  : 77        : output : 3.3-V LVTTL       :         : 2         : Y              
+DVID_RGB[6]                  : 77        : output : 3.3-V LVCMOS      :         : 2         : Y              
 GND*                         : 78        :        :                   :         : 2         :                
 GND                          : 79        : gnd    :                   :         :           :                
 VCCIO2                       : 80        : power  :                   : 3.3V    : 2         :                
-DVID_RGB[7]                  : 81        : output : 3.3-V LVTTL       :         : 2         : Y              
+DVID_RGB[7]                  : 81        : output : 3.3-V LVCMOS      :         : 2         : Y              
 GND*                         : 82        :        :                   :         : 2         :                
-DVID_SYNC                    : 83        : output : 3.3-V LVTTL       :         : 2         : Y              
+DVID_SYNC                    : 83        : output : 3.3-V LVCMOS      :         : 2         : Y              
 GND*                         : 84        :        :                   :         : 2         :                
-DVID_CLK                     : 85        : output : 3.3-V LVTTL       :         : 2         : Y              
+DVID_CLK                     : 85        : output : 3.3-V LVCMOS      :         : 2         : Y              
 GND*                         : 86        :        :                   :         : 2         :                
 GND*                         : 87        :        :                   :         : 2         :                
 VCCINT                       : 88        : power  :                   : 1.8V    :           :                
-DVID_RGB[9]                  : 89        : output : 3.3-V LVTTL       :         : 2         : Y              
+DVID_RGB[9]                  : 89        : output : 3.3-V LVCMOS      :         : 2         : Y              
 GND                          : 90        : gnd    :                   :         :           :                
-DVID_RGB[8]                  : 91        : output : 3.3-V LVTTL       :         : 2         : Y              
+DVID_RGB[8]                  : 91        : output : 3.3-V LVCMOS      :         : 2         : Y              
 GND*                         : 92        :        :                   :         : 2         :                
 GND                          : 93        : gnd    :                   :         :           :                
 VCCIO2                       : 94        : power  :                   : 3.3V    : 2         :                
 GND                          : 95        : gnd    :                   :         :           :                
 GND*                         : 96        :        :                   :         : 2         :                
-DVID_RGB[10]                 : 97        : output : 3.3-V LVTTL       :         : 2         : Y              
+DVID_RGB[10]                 : 97        : output : 3.3-V LVCMOS      :         : 2         : Y              
 GND*                         : 98        :        :                   :         : 2         :                
-DVID_RGB[11]                 : 99        : output : 3.3-V LVTTL       :         : 2         : Y              
+DVID_RGB[11]                 : 99        : output : 3.3-V LVCMOS      :         : 2         : Y              
 GND*                         : 100       :        :                   :         : 2         :                

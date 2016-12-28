@@ -1,5 +1,5 @@
 Analysis & Synthesis report for AtariMod
-Fri Nov 18 23:13:01 2016
+Wed Dec 28 12:31:00 2016
 Quartus Prime Version 16.0.0 Build 211 04/27/2016 SJ Lite Edition
 
 
@@ -14,7 +14,9 @@ Quartus Prime Version 16.0.0 Build 211 04/27/2016 SJ Lite Edition
   6. Analysis & Synthesis Resource Usage Summary
   7. Analysis & Synthesis Resource Utilization by Entity
   8. General Register Statistics
-  9. Analysis & Synthesis Messages
+  9. Inverted Register Statistics
+ 10. Multiplexer Restructuring Statistics (Restructuring Performed)
+ 11. Analysis & Synthesis Messages
 
 
 
@@ -41,13 +43,13 @@ agreement for further details.
 +---------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                              ;
 +-----------------------------+---------------------------------------------+
-; Analysis & Synthesis Status ; Successful - Fri Nov 18 23:13:01 2016       ;
+; Analysis & Synthesis Status ; Successful - Wed Dec 28 12:31:00 2016       ;
 ; Quartus Prime Version       ; 16.0.0 Build 211 04/27/2016 SJ Lite Edition ;
 ; Revision Name               ; AtariMod                                    ;
-; Top-level Entity Name       ; TestPattern                                 ;
+; Top-level Entity Name       ; GTIA2DVideo                                 ;
 ; Family                      ; MAX V                                       ;
-; Total logic elements        ; 69                                          ;
-; Total pins                  ; 16                                          ;
+; Total logic elements        ; 518                                         ;
+; Total pins                  ; 34                                          ;
 ; Total virtual pins          ; 0                                           ;
 ; UFM blocks                  ; 0 / 1 ( 0 % )                               ;
 +-----------------------------+---------------------------------------------+
@@ -59,7 +61,7 @@ agreement for further details.
 ; Option                                                                     ; Setting            ; Default Value      ;
 +----------------------------------------------------------------------------+--------------------+--------------------+
 ; Device                                                                     ; 5M570ZT100C5       ;                    ;
-; Top-level entity name                                                      ; TestPattern        ; AtariMod           ;
+; Top-level entity name                                                      ; GTIA2DVideo        ; AtariMod           ;
 ; Family name                                                                ; MAX V              ; Cyclone V          ;
 ; Use smart compilation                                                      ; Off                ; Off                ;
 ; Enable parallel Assembler and TimeQuest Timing Analyzer during compilation ; On                 ; On                 ;
@@ -141,43 +143,43 @@ Parallel compilation was disabled, but you have multiple processors available. E
 +----------------------------------+-----------------+-----------------+-----------------------------------------------------------------------------+---------+
 ; File Name with User-Entered Path ; Used in Netlist ; File Type       ; File Name with Absolute Path                                                ; Library ;
 +----------------------------------+-----------------+-----------------+-----------------------------------------------------------------------------+---------+
-; TestPattern.vhd                  ; yes             ; User VHDL File  ; C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/TestPattern.vhd ;         ;
+; GTIA2DVideo.vhd                  ; yes             ; User VHDL File  ; C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/GTIA2DVideo.vhd ;         ;
 +----------------------------------+-----------------+-----------------+-----------------------------------------------------------------------------+---------+
 
 
-+-------------------------------------------------------+
-; Analysis & Synthesis Resource Usage Summary           ;
-+---------------------------------------------+---------+
-; Resource                                    ; Usage   ;
-+---------------------------------------------+---------+
-; Total logic elements                        ; 69      ;
-;     -- Combinational with no register       ; 33      ;
-;     -- Register only                        ; 0       ;
-;     -- Combinational with a register        ; 36      ;
-;                                             ;         ;
-; Logic element usage by number of LUT inputs ;         ;
-;     -- 4 input functions                    ; 24      ;
-;     -- 3 input functions                    ; 15      ;
-;     -- 2 input functions                    ; 27      ;
-;     -- 1 input functions                    ; 3       ;
-;     -- 0 input functions                    ; 0       ;
-;                                             ;         ;
-; Logic elements by mode                      ;         ;
-;     -- normal mode                          ; 50      ;
-;     -- arithmetic mode                      ; 19      ;
-;     -- qfbk mode                            ; 0       ;
-;     -- register cascade mode                ; 0       ;
-;     -- synchronous clear/load mode          ; 22      ;
-;     -- asynchronous clear/load mode         ; 0       ;
-;                                             ;         ;
-; Total registers                             ; 36      ;
-; Total logic cells in carry chains           ; 22      ;
-; I/O pins                                    ; 16      ;
-; Maximum fan-out node                        ; out_clk ;
-; Maximum fan-out                             ; 33      ;
-; Total fan-out                               ; 279     ;
-; Average fan-out                             ; 3.28    ;
-+---------------------------------------------+---------+
++-----------------------------------------------------+
+; Analysis & Synthesis Resource Usage Summary         ;
++---------------------------------------------+-------+
+; Resource                                    ; Usage ;
++---------------------------------------------+-------+
+; Total logic elements                        ; 518   ;
+;     -- Combinational with no register       ; 268   ;
+;     -- Register only                        ; 17    ;
+;     -- Combinational with a register        ; 233   ;
+;                                             ;       ;
+; Logic element usage by number of LUT inputs ;       ;
+;     -- 4 input functions                    ; 231   ;
+;     -- 3 input functions                    ; 33    ;
+;     -- 2 input functions                    ; 54    ;
+;     -- 1 input functions                    ; 182   ;
+;     -- 0 input functions                    ; 1     ;
+;                                             ;       ;
+; Logic elements by mode                      ;       ;
+;     -- normal mode                          ; 503   ;
+;     -- arithmetic mode                      ; 15    ;
+;     -- qfbk mode                            ; 0     ;
+;     -- register cascade mode                ; 0     ;
+;     -- synchronous clear/load mode          ; 17    ;
+;     -- asynchronous clear/load mode         ; 0     ;
+;                                             ;       ;
+; Total registers                             ; 250   ;
+; Total logic cells in carry chains           ; 17    ;
+; I/O pins                                    ; 34    ;
+; Maximum fan-out node                        ; CLK   ;
+; Maximum fan-out                             ; 253   ;
+; Total fan-out                               ; 1826  ;
+; Average fan-out                             ; 3.31  ;
++---------------------------------------------+-------+
 
 
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -185,7 +187,7 @@ Parallel compilation was disabled, but you have multiple processors available. E
 +----------------------------+-------------+--------------+------------+------+--------------+--------------+-------------------+------------------+-----------------+------------+---------------------+-------------+--------------+
 ; Compilation Hierarchy Node ; Logic Cells ; LC Registers ; UFM Blocks ; Pins ; Virtual Pins ; LUT-Only LCs ; Register-Only LCs ; LUT/Register LCs ; Carry Chain LCs ; Packed LCs ; Full Hierarchy Name ; Entity Name ; Library Name ;
 +----------------------------+-------------+--------------+------------+------+--------------+--------------+-------------------+------------------+-----------------+------------+---------------------+-------------+--------------+
-; |TestPattern               ; 69 (69)     ; 36           ; 0          ; 16   ; 0            ; 33 (33)      ; 0 (0)             ; 36 (36)          ; 22 (22)         ; 0 (0)      ; |TestPattern        ; TestPattern ; work         ;
+; |GTIA2DVideo               ; 518 (518)   ; 250          ; 0          ; 34   ; 0            ; 268 (268)    ; 17 (17)           ; 233 (233)        ; 17 (17)         ; 0 (0)      ; |GTIA2DVideo        ; GTIA2DVideo ; work         ;
 +----------------------------+-------------+--------------+------------+------+--------------+--------------+-------------------+------------------+-----------------+------------+---------------------+-------------+--------------+
 Note: For table entries with two numbers listed, the numbers in parentheses indicate the number of resources of the given type used by the specific entity alone. The numbers listed outside of parentheses indicate the total resources of the given type used by the specific entity and all of its sub-entities in the hierarchy.
 
@@ -195,14 +197,68 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 +----------------------------------------------+-------+
 ; Statistic                                    ; Value ;
 +----------------------------------------------+-------+
-; Total registers                              ; 36    ;
-; Number of registers using Synchronous Clear  ; 22    ;
-; Number of registers using Synchronous Load   ; 0     ;
+; Total registers                              ; 250   ;
+; Number of registers using Synchronous Clear  ; 9     ;
+; Number of registers using Synchronous Load   ; 8     ;
 ; Number of registers using Asynchronous Clear ; 0     ;
 ; Number of registers using Asynchronous Load  ; 0     ;
-; Number of registers using Clock Enable       ; 9     ;
+; Number of registers using Clock Enable       ; 211   ;
 ; Number of registers using Preset             ; 0     ;
 +----------------------------------------------+-------+
+
+
++---------------------------------------------------+
+; Inverted Register Statistics                      ;
++-----------------------------------------+---------+
+; Inverted Register                       ; Fan out ;
++-----------------------------------------+---------+
+; COLPF1[2]                               ; 2       ;
+; COLPF1[3]                               ; 2       ;
+; COLPF3[1]                               ; 1       ;
+; COLPF2[2]                               ; 1       ;
+; COLPF3[2]                               ; 1       ;
+; COLPF0[2]                               ; 1       ;
+; COLPF3[3]                               ; 1       ;
+; COLPF2[4]                               ; 1       ;
+; COLPF3[4]                               ; 1       ;
+; COLPF2[5]                               ; 1       ;
+; COLPF3[5]                               ; 1       ;
+; COLPF0[6]                               ; 1       ;
+; COLPF1[6]                               ; 1       ;
+; Total number of inverted registers = 13 ;         ;
++-----------------------------------------+---------+
+
+
++-----------------------------------------------------------------------------------------------------------------------------------------------+
+; Multiplexer Restructuring Statistics (Restructuring Performed)                                                                                ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+---------------------------------+
+; Multiplexer Inputs ; Bus Width ; Baseline Area ; Area if Restructured ; Saving if Restructured ; Registered ; Example Multiplexer Output      ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+---------------------------------+
+; 3:1                ; 9 bits    ; 18 LEs        ; 9 LEs                ; 9 LEs                  ; Yes        ; |GTIA2DVideo|vcounter[3]        ;
+; 3:1                ; 4 bits    ; 8 LEs         ; 4 LEs                ; 4 LEs                  ; Yes        ; |GTIA2DVideo|ticker_p0[3]       ;
+; 3:1                ; 2 bits    ; 4 LEs         ; 2 LEs                ; 2 LEs                  ; Yes        ; |GTIA2DVideo|ticker_m0[0]       ;
+; 3:1                ; 4 bits    ; 8 LEs         ; 4 LEs                ; 4 LEs                  ; Yes        ; |GTIA2DVideo|ticker_p1[2]       ;
+; 3:1                ; 2 bits    ; 4 LEs         ; 2 LEs                ; 2 LEs                  ; Yes        ; |GTIA2DVideo|ticker_m1[1]       ;
+; 3:1                ; 4 bits    ; 8 LEs         ; 4 LEs                ; 4 LEs                  ; Yes        ; |GTIA2DVideo|ticker_p2[0]       ;
+; 3:1                ; 2 bits    ; 4 LEs         ; 2 LEs                ; 2 LEs                  ; Yes        ; |GTIA2DVideo|ticker_m2[1]       ;
+; 3:1                ; 4 bits    ; 8 LEs         ; 4 LEs                ; 4 LEs                  ; Yes        ; |GTIA2DVideo|ticker_p3[1]       ;
+; 3:1                ; 2 bits    ; 4 LEs         ; 2 LEs                ; 2 LEs                  ; Yes        ; |GTIA2DVideo|ticker_m3[1]       ;
+; 3:1                ; 8 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; Yes        ; |GTIA2DVideo|hcounter[3]        ;
+; 4:1                ; 8 bits    ; 16 LEs        ; 0 LEs                ; 16 LEs                 ; Yes        ; |GTIA2DVideo|GRAFP0[1]          ;
+; 4:1                ; 8 bits    ; 16 LEs        ; 0 LEs                ; 16 LEs                 ; Yes        ; |GTIA2DVideo|GRAFM[4]           ;
+; 4:1                ; 8 bits    ; 16 LEs        ; 0 LEs                ; 16 LEs                 ; Yes        ; |GTIA2DVideo|GRAFP1[6]          ;
+; 4:1                ; 8 bits    ; 16 LEs        ; 0 LEs                ; 16 LEs                 ; Yes        ; |GTIA2DVideo|GRAFP2[7]          ;
+; 4:1                ; 8 bits    ; 16 LEs        ; 0 LEs                ; 16 LEs                 ; Yes        ; |GTIA2DVideo|GRAFP3[0]          ;
+; 4:1                ; 2 bits    ; 4 LEs         ; 2 LEs                ; 2 LEs                  ; Yes        ; |GTIA2DVideo|out_overridelum[1] ;
+; 3:1                ; 2 bits    ; 4 LEs         ; 2 LEs                ; 2 LEs                  ; No         ; |GTIA2DVideo|tmp_colorlines_res ;
+; 3:1                ; 2 bits    ; 4 LEs         ; 2 LEs                ; 2 LEs                  ; No         ; |GTIA2DVideo|tmp_colorlines_res ;
+; 3:1                ; 2 bits    ; 4 LEs         ; 2 LEs                ; 2 LEs                  ; No         ; |GTIA2DVideo|GRACTL             ;
+; 4:1                ; 2 bits    ; 4 LEs         ; 2 LEs                ; 2 LEs                  ; No         ; |GTIA2DVideo|tmp_colorlines_res ;
+; 4:1                ; 2 bits    ; 4 LEs         ; 2 LEs                ; 2 LEs                  ; No         ; |GTIA2DVideo|tmp_colorlines_res ;
+; 4:1                ; 4 bits    ; 8 LEs         ; 8 LEs                ; 0 LEs                  ; No         ; |GTIA2DVideo|tmp_bgcolor        ;
+; 6:1                ; 4 bits    ; 16 LEs        ; 8 LEs                ; 8 LEs                  ; No         ; |GTIA2DVideo|tmp_colorlines     ;
+; 6:1                ; 3 bits    ; 12 LEs        ; 9 LEs                ; 3 LEs                  ; No         ; |GTIA2DVideo|tmp_bgcolor        ;
++--------------------+-----------+---------------+----------------------+------------------------+------------+---------------------------------+
 
 
 +-------------------------------+
@@ -211,27 +267,30 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 Info: *******************************************************************
 Info: Running Quartus Prime Analysis & Synthesis
     Info: Version 16.0.0 Build 211 04/27/2016 SJ Lite Edition
-    Info: Processing started: Fri Nov 18 23:11:46 2016
+    Info: Processing started: Wed Dec 28 12:30:01 2016
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off AtariMod -c AtariMod
 Warning (20028): Parallel compilation is not licensed and has been disabled
+Info (12021): Found 2 design units, including 1 entities, in source file gtia2dvideo.vhd
+    Info (12022): Found design unit 1: GTIA2DVideo-immediate File: C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/GTIA2DVideo.vhd Line: 29
+    Info (12023): Found entity 1: GTIA2DVideo File: C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/GTIA2DVideo.vhd Line: 10
 Info (12021): Found 2 design units, including 1 entities, in source file testpattern.vhd
-    Info (12022): Found design unit 1: TestPattern-immediate File: C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/TestPattern.vhd Line: 22
+    Info (12022): Found design unit 1: TestPattern-immediate File: C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/TestPattern.vhd Line: 23
     Info (12023): Found entity 1: TestPattern File: C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/TestPattern.vhd Line: 9
-Info (12021): Found 2 design units, including 1 entities, in source file gtia.vhd
-    Info (12022): Found design unit 1: GTIA-immediate File: C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/GTIA.vhd Line: 25
-    Info (12023): Found entity 1: GTIA File: C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/GTIA.vhd Line: 6
-Info (12127): Elaborating entity "TestPattern" for the top level hierarchy
-Warning (10542): VHDL Variable Declaration warning at TestPattern.vhd(48): used initial value expression for variable "totallines" because variable was never assigned a value File: C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/TestPattern.vhd Line: 48
-Warning (21074): Design contains 1 input pin(s) that do not drive logic
-    Warning (15610): No output dependent on input pin "RST" File: C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/TestPattern.vhd Line: 13
-Info (21057): Implemented 85 device resources after synthesis - the final resource count might be different
-    Info (21058): Implemented 2 input pins
+Info (12127): Elaborating entity "GTIA2DVideo" for the top level hierarchy
+Warning (10036): Verilog HDL or VHDL warning at GTIA2DVideo.vhd(82): object "VDELAY" assigned a value but never read File: C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/GTIA2DVideo.vhd Line: 82
+Warning (13024): Output pins are stuck at VCC or GND
+    Warning (13410): Pin "DVID_RGB[8]" is stuck at GND File: C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/GTIA2DVideo.vhd Line: 24
+    Warning (13410): Pin "DVID_RGB[9]" is stuck at GND File: C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/GTIA2DVideo.vhd Line: 24
+    Warning (13410): Pin "DVID_RGB[10]" is stuck at GND File: C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/GTIA2DVideo.vhd Line: 24
+    Warning (13410): Pin "DVID_RGB[11]" is stuck at GND File: C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus/GTIA2DVideo.vhd Line: 24
+Info (21057): Implemented 552 device resources after synthesis - the final resource count might be different
+    Info (21058): Implemented 20 input pins
     Info (21059): Implemented 14 output pins
-    Info (21061): Implemented 69 logic cells
-Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 4 warnings
-    Info: Peak virtual memory: 832 megabytes
-    Info: Processing ended: Fri Nov 18 23:13:01 2016
-    Info: Elapsed time: 00:01:15
-    Info: Total CPU time (on all processors): 00:01:37
+    Info (21061): Implemented 518 logic cells
+Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 7 warnings
+    Info: Peak virtual memory: 856 megabytes
+    Info: Processing ended: Wed Dec 28 12:31:01 2016
+    Info: Elapsed time: 00:01:00
+    Info: Total CPU time (on all processors): 00:01:39
 
 

@@ -39,7 +39,7 @@
 
 set_global_assignment -name FAMILY "MAX V"
 set_global_assignment -name DEVICE 5M570ZT100C5
-set_global_assignment -name TOP_LEVEL_ENTITY TestPattern
+set_global_assignment -name TOP_LEVEL_ENTITY GTIA2DVideo
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 16.0.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "18:58:43  OCTOBER 20, 2016"
 set_global_assignment -name LAST_QUARTUS_VERSION 16.0.0
@@ -64,9 +64,45 @@ set_location_assignment PIN_69 -to DVID_RGB[2]
 set_location_assignment PIN_67 -to DVID_RGB[1]
 set_location_assignment PIN_61 -to DVID_RGB[0]
 set_location_assignment PIN_83 -to DVID_SYNC
-set_global_assignment -name VHDL_FILE TestPattern.vhd
-set_global_assignment -name VHDL_FILE GTIA.vhd
-set_global_assignment -name SDC_FILE AtariMod.sdc
 set_location_assignment PIN_12 -to CLK100
 set_location_assignment PIN_85 -to DVID_CLK
+set_global_assignment -name VHDL_FILE GTIA2DVideo.vhd
+set_global_assignment -name VHDL_FILE TestPattern.vhd
+set_global_assignment -name SDC_FILE AtariMod.sdc
 set_global_assignment -name CDF_FILE Programming.cdf
+set_location_assignment PIN_18 -to A[0]
+set_location_assignment PIN_16 -to A[1]
+set_location_assignment PIN_6 -to A[2]
+set_location_assignment PIN_4 -to A[3]
+set_location_assignment PIN_2 -to A[4]
+set_location_assignment PIN_17 -to D[0]
+set_location_assignment PIN_15 -to D[1]
+set_location_assignment PIN_19 -to D[2]
+set_location_assignment PIN_21 -to D[3]
+set_location_assignment PIN_30 -to D[4]
+set_location_assignment PIN_20 -to D[5]
+set_location_assignment PIN_26 -to D[6]
+set_location_assignment PIN_28 -to D[7]
+set_location_assignment PIN_29 -to W
+set_location_assignment PIN_27 -to CS
+set_location_assignment PIN_64 -to PHI2
+set_location_assignment PIN_5 -to AN[0]
+set_location_assignment PIN_7 -to AN[1]
+set_location_assignment PIN_3 -to AN[2]
+set_location_assignment PIN_62 -to CLK
+set_instance_assignment -name IO_STANDARD "3.3V SCHMITT TRIGGER INPUT" -to CLK
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_CLK
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[11]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[10]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[9]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[8]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[7]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[5]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_SYNC

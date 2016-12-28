@@ -10,6 +10,7 @@ entity TestPattern is
 	port (
 	   -- default clocking and reset
 		CLK100: in std_logic;	
+		CLK: in std_logic;	
       RST: in std_logic;
 	
 		DVID_CLK    : out std_logic;
@@ -43,7 +44,7 @@ begin
 	
 
 	-------------------- test signal generator ------------
-	process (pixelclock)
+	process (pixelclock,CLK)
 	                             
 	variable totallines : integer range 0 to 511 := 312;
 	variable x : integer range 0 to 511 := 0;     
@@ -62,7 +63,7 @@ begin
 	
 	begin
 		
-		if rising_edge(pixelclock) then
+		if rising_edge(CLK) then -- pixelclock) then
 		
 				out_clk := not out_clk;
 				
@@ -97,7 +98,7 @@ begin
 								
 				-- increment the counters for the next pixel
 				if x<456 then 
-					x := x+1;
+					x := x+2;
 				else 
 					x := 0;
 					if y<totallines-1 then 
@@ -106,13 +107,7 @@ begin
 						y := 0;
 					end if;
 				end if;
-			
---				-- switch between two output modes
---				if SWITCH(9) = '0' then
---					totallines := 312;
---				else
---					totallines := 260;
---				end if;				
+		
 		end if;
 			
 		
