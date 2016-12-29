@@ -1,4 +1,4 @@
-start_analysis_synthesis:s:00:01:02
+start_analysis_synthesis:s:00:01:00
 start_analysis_elaboration:s
-start_fitter:s:00:00:21
+start_fitter:s:00:00:22
 start_assembler:s:00:00:05

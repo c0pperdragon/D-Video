@@ -91,7 +91,7 @@ TDO                          : 25        : output :                   :         
 D[6]                         : 26        : input  : 3.3-V LVTTL       :         : 1         : Y              
 CS                           : 27        : input  : 3.3-V LVTTL       :         : 1         : Y              
 D[7]                         : 28        : input  : 3.3-V LVTTL       :         : 1         : Y              
-W                            : 29        : input  : 3.3-V LVTTL       :         : 1         : Y              
+RW                           : 29        : input  : 3.3-V LVTTL       :         : 1         : Y              
 D[4]                         : 30        : input  : 3.3-V LVTTL       :         : 1         : Y              
 VCCIO1                       : 31        : power  :                   : 3.3V    : 1         :                
 GND                          : 32        : gnd    :                   :         :           :                
@@ -126,7 +126,7 @@ GND                          : 60        : gnd    :                   :         
 DVID_RGB[0]                  : 61        : output : 3.3-V LVCMOS      :         : 2         : Y              
 CLK                          : 62        : input  : 3.3V Schmitt Trigger Input :         : 2         : Y              
 VCCINT                       : 63        : power  :                   : 1.8V    :           :                
-PHI2                         : 64        : input  : 3.3-V LVTTL       :         : 2         : Y              
+HALT                         : 64        : input  : 3.3-V LVTTL       :         : 2         : Y              
 GND                          : 65        : gnd    :                   :         :           :                
 GND*                         : 66        :        :                   :         : 2         :                
 DVID_RGB[1]                  : 67        : output : 3.3-V LVCMOS      :         : 2         : Y              

@@ -11,12 +11,12 @@ entity GTIA2DVideo is
 	port (
 		-- Connections to the real GTIAs pins (everything is inverted)
 		CLK         : in std_logic;
-		PHI2        : in std_logic;
 		A           : in std_logic_vector(4 downto 0);
 		D           : in std_logic_vector(7 downto 0);
 		AN          : in std_logic_vector(2 downto 0);
-		W           : in std_logic;
+		RW          : in std_logic;
 		CS          : in std_logic;
+		HALT        : in std_logic;
 		
 		-- output to the DVideo interface
 		DVID_CLK    : out std_logic;
@@ -28,7 +28,7 @@ end entity;
 
 architecture immediate of GTIA2DVideo is
 begin
-	process (CLK,PHI2) 
+	process (CLK) 
 
   	type T_rgbtable is array (0 to 255) of integer range 0 to 4095;
    constant rgbtable : T_rgbtable := (
@@ -49,6 +49,12 @@ begin
 		16#320#,16#430#,16#540#,16#650#,16#760#,16#970#,16#a80#,16#b90#,16#ca0#,16#db0#,16#fc0#,16#fd1#,16#fd3#,16#fd5#,16#fd7#,16#fe8#,
 		16#310#,16#410#,16#520#,16#620#,16#730#,16#930#,16#a40#,16#b40#,16#c50#,16#d50#,16#f60#,16#f71#,16#f83#,16#f95#,16#fa7#,16#fb8#
 	);	
+	
+	-- visible screen area
+	constant topedge    : integer := 42;
+	constant bottomedge : integer := 282;
+	constant leftedge   : integer := 41; -- 35;
+	constant rightedge  : integer := 217; -- 219;
 	
 	-- registers of the GTIA
 	variable HPOSP0 : std_logic_vector (7 downto 0) := "00000000";
@@ -88,6 +94,8 @@ begin
 	variable highres : std_logic := '0';
 	variable command : std_logic_vector(2 downto 0) := "000";
 	variable prevcommand : std_logic_vector(2 downto 0) := "000";
+	variable prevrw: std_logic := '0';
+	variable prevhalt : std_logic := '0';
 	
 	variable tmp_colorlines : std_logic_vector(8 downto 0);
 	variable tmp_colorlines_res : std_logic_vector(8 downto 0);
@@ -96,21 +104,21 @@ begin
 	variable tmp_color : std_logic_vector(7 downto 0);
 
 	-- variables for player and missile display
-	variable ticker_p0 : integer range 0 to 15;
-	variable ticker_p1 : integer range 0 to 15;
-	variable ticker_p2 : integer range 0 to 15;
-	variable ticker_p3 : integer range 0 to 15;
-	variable ticker_m0 : integer range 0 to 3;
-	variable ticker_m1 : integer range 0 to 3;
-	variable ticker_m2 : integer range 0 to 3;
-	variable ticker_m3 : integer range 0 to 3;
+	variable ticker_p0 : integer range 0 to 15 := 15;
+	variable ticker_p1 : integer range 0 to 15 := 15;
+	variable ticker_p2 : integer range 0 to 15 := 15;
+	variable ticker_p3 : integer range 0 to 15 := 15;
+	variable ticker_m0 : integer range 0 to 3 := 3;
+	variable ticker_m1 : integer range 0 to 3 := 3;
+	variable ticker_m2 : integer range 0 to 3 := 3;
+	variable ticker_m3 : integer range 0 to 3 := 3;
 	
 	-- used for async operation in both halves of the clock --
-	variable out_sync : std_logic;
-	variable out_color : std_logic_vector(7 downto 0);
-	variable out_overridelum : std_logic_vector(1 downto 0);
+	variable out_sync : std_logic  := '0';
+	variable out_color : std_logic_vector(7 downto 0) := "00000000";
+	variable out_overridelum : std_logic_vector(1 downto 0) := "00";
 	
-	
+		-- test, if it is now necessary to increment player/missile pixel counter
 		function needpixelstep (hpos:std_logic_vector(7 downto 0); size: std_logic_vector(1 downto 0)) return boolean is
 		variable x:std_logic_vector(1 downto 0);
 		begin
@@ -119,7 +127,7 @@ begin
 			when "00" => return true;               -- single size
 			when "01" => return x(0)=hpos(0);       -- double size
 			when "10" => return true;               -- single size
-			when "11" => return x=hpos(1 downto 0); -- 4-times size
+			when "11" => return x=hpos(1 downto 0); -- 4 times size
 			end case;
 		end needpixelstep;			
 
@@ -211,16 +219,32 @@ begin
 				tmp_colorlines(3) := '1';
 			end if;
 			if ticker_m0<2 and GRAFM(0 + (1-ticker_m0))='1' then
-				tmp_colorlines(0) := '1';
+			   if PRIOR(4)='1' then
+					tmp_colorlines(7) := '1';
+				else 
+					tmp_colorlines(0) := '1';
+				end if;
 			end if;
 			if ticker_m1<2 and GRAFM(2 + (1-ticker_m1))='1' then
-				tmp_colorlines(1) := '1';
+			   if PRIOR(4)='1' then
+					tmp_colorlines(7) := '1';
+				else 
+					tmp_colorlines(1) := '1';
+				end if;
 			end if;
 			if ticker_m2<2 and GRAFM(4 + (1-ticker_m2))='1' then
-				tmp_colorlines(2) := '1';
+			   if PRIOR(4)='1' then
+					tmp_colorlines(7) := '1';
+				else 
+					tmp_colorlines(2) := '1';
+				end if;
 			end if;
 			if ticker_m3<2 and GRAFM(6 + (1-ticker_m3))='1' then
-				tmp_colorlines(3) := '1';
+			   if PRIOR(4)='1' then
+					tmp_colorlines(7) := '1';
+				else 
+					tmp_colorlines(3) := '1';
+				end if;
 			end if;
 				
 		   -- trigger start of display of players and missiles ---			
@@ -284,7 +308,7 @@ begin
 			-- in player multicolor mode, PM0/PM1 and PM2/PM3 each can coexist
 			else 
 				if tmp_colorlines(0)='1' or tmp_colorlines(1)='1' then
-					tmp_colorlines(2 downto 1) := "00";
+					tmp_colorlines(3 downto 2) := "00";
 				end if;
 			end if;
 			-- normally playfield color lines can not be concurrently visible,
@@ -329,22 +353,27 @@ begin
 			-- simulate the 'wired or' that mixes together all bits of 
 			-- all selected color lines
 			out_color := "00000000";
-			if tmp_colorlines_res(0)='1' then	out_color := out_color or (COLPM0 & "0"); end if;
-			if tmp_colorlines_res(1)='1' then	out_color := out_color or (COLPM1 & "0"); end if;
-			if tmp_colorlines_res(2)='1' then	out_color := out_color or (COLPM2 & "0"); end if;
-			if tmp_colorlines_res(3)='1' then	out_color := out_color or (COLPM3 & "0"); end if;
-			if tmp_colorlines_res(4)='1' then	out_color := out_color or (COLPF0 & "0"); end if;
-			if tmp_colorlines_res(5)='1' then	out_color := out_color or (COLPF1 & "0"); end if;
-			if tmp_colorlines_res(6)='1' then	out_color := out_color or (COLPF2 & "0"); end if;
-			if tmp_colorlines_res(7)='1' then	out_color := out_color or (COLPF3 & "0"); end if;
-			if tmp_colorlines_res(8)='1' then	out_color := out_color or tmp_bgcolor;    end if;
-		
+			-- constrain color generation to screen boundaries
+			if hcounter>=leftedge and hcounter<rightedge and vcounter>=topedge and vcounter<bottomedge then
+				if tmp_colorlines_res(0)='1' then	out_color := out_color or (COLPM0 & "0"); end if;
+				if tmp_colorlines_res(1)='1' then	out_color := out_color or (COLPM1 & "0"); end if;
+				if tmp_colorlines_res(2)='1' then	out_color := out_color or (COLPM2 & "0"); end if;
+				if tmp_colorlines_res(3)='1' then	out_color := out_color or (COLPM3 & "0"); end if;
+				if tmp_colorlines_res(4)='1' then	out_color := out_color or (COLPF0 & "0"); end if;
+				if tmp_colorlines_res(5)='1' then	out_color := out_color or (COLPF1 & "0"); end if;
+				if tmp_colorlines_res(6)='1' then	out_color := out_color or (COLPF2 & "0"); end if;
+				if tmp_colorlines_res(7)='1' then	out_color := out_color or (COLPF3 & "0"); end if;
+				if tmp_colorlines_res(8)='1' then	out_color := out_color or tmp_bgcolor;    end if;
+			else
+				out_overridelum := "00";
+			end if ;
+			
 			-- generate csync --
 			out_sync := '1';
 			if hcounter<30 then
 				out_sync := '0';
 			end if;		
-			if vcounter<3 then 
+			if vcounter<10 then 
 				out_sync := not out_sync;
 			end if;
 
@@ -371,8 +400,8 @@ begin
 		
 		--------------------- logic for the cpu/data bus -------------------			
 		if falling_edge(clk) then
-			----- let cPU write to the registers -----
-			if (CS='1') and (W='1') and (PHI2='0') then
+			----- let cPU write to the registers (at second clock where rw is asserted) --
+			if (CS='1') and (RW='1') and (prevrw='1') then
 				case not A is
 					when "00000" => HPOSP0 := not D;
 					when "00001" => HPOSP1 := not D;
@@ -408,30 +437,31 @@ begin
 					when "11111" => 
 				end case;
 			end if;	
+			prevrw := RW; 
 			
-			if (PHI2='0') and vcounter>=42 and vcounter<260 then
-				-- receive player data via DMA
+			-- receive player/missile data via DMA
+			if prevhalt='1' then
 				if GRACTL(1)='1' then
-					if hcounter=3*2 or hcounter=3*2+1 then
+					if hcounter=3*2+1 then
 						GRAFP0 := not D;
 					end if;
-					if hcounter=4*2 or hcounter=4*2+1 then
+					if hcounter=4*2+1 then
 						GRAFP1 := not D;
 					end if;
-					if hcounter=5*2 or hcounter=5*2+1 then
+					if hcounter=5*2+1 then
 						GRAFP2 := not D;
 					end if;
-					if hcounter=6*2 or hcounter=6*2+1 then
+					if hcounter=6*2+1 then
 						GRAFP3 := not D;
 					end if;
 				end if;
-				-- receive missile data via DMA
 				if GRACTL(0)='1' then
-					if hcounter=1*2 or hcounter=1*2+1 then
+					if hcounter=1*2+1 then
 						GRAFM := not D;
 					end if;
 				end if;
 			end if;
+			prevhalt := HALT;
 	
 		end if;
 		

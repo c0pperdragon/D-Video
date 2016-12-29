@@ -1,9 +1,9 @@
-Analysis & Synthesis Status : Successful - Wed Dec 28 12:31:00 2016
+Analysis & Synthesis Status : Successful - Thu Dec 29 12:02:21 2016
 Quartus Prime Version : 16.0.0 Build 211 04/27/2016 SJ Lite Edition
 Revision Name : AtariMod
 Top-level Entity Name : GTIA2DVideo
 Family : MAX V
-Total logic elements : 518
+Total logic elements : 529
 Total pins : 34
 Total virtual pins : 0
 UFM blocks : 0 / 1 ( 0 % )

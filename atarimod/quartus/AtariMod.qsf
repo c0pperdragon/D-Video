@@ -83,9 +83,7 @@ set_location_assignment PIN_30 -to D[4]
 set_location_assignment PIN_20 -to D[5]
 set_location_assignment PIN_26 -to D[6]
 set_location_assignment PIN_28 -to D[7]
-set_location_assignment PIN_29 -to W
 set_location_assignment PIN_27 -to CS
-set_location_assignment PIN_64 -to PHI2
 set_location_assignment PIN_5 -to AN[0]
 set_location_assignment PIN_7 -to AN[1]
 set_location_assignment PIN_3 -to AN[2]
@@ -106,3 +104,5 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[1]
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[0]
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_SYNC
+set_location_assignment PIN_29 -to RW
+set_location_assignment PIN_64 -to HALT

@@ -1,11 +1,11 @@
-Fitter Status : Successful - Wed Dec 28 12:31:21 2016
+Fitter Status : Successful - Thu Dec 29 12:02:43 2016
 Quartus Prime Version : 16.0.0 Build 211 04/27/2016 SJ Lite Edition
 Revision Name : AtariMod
 Top-level Entity Name : GTIA2DVideo
 Family : MAX V
 Device : 5M570ZT100C5
 Timing Models : Final
-Total logic elements : 505 / 570 ( 89 % )
+Total logic elements : 511 / 570 ( 90 % )
 Total pins : 34 / 74 ( 46 % )
 Total virtual pins : 0
 UFM blocks : 0 / 1 ( 0 % )
