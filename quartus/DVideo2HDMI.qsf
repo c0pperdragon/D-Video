@@ -39,7 +39,7 @@
 
 set_global_assignment -name FAMILY "Cyclone V"
 set_global_assignment -name DEVICE 5CGXFC5C6F27C7
-set_global_assignment -name TOP_LEVEL_ENTITY DVideo2HDMI
+set_global_assignment -name TOP_LEVEL_ENTITY C642HDMI
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 16.0.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "21:44:00  AUGUST 03, 2016"
 set_global_assignment -name LAST_QUARTUS_VERSION 16.0.0
@@ -146,6 +146,7 @@ set_location_assignment PIN_P11 -to BUTTON[0]
 set_location_assignment PIN_P12 -to BUTTON[1]
 set_location_assignment PIN_Y15 -to BUTTON[2]
 set_location_assignment PIN_Y16 -to BUTTON[3]
+set_global_assignment -name VHDL_FILE C642HDMI.vhd
 set_global_assignment -name VHDL_FILE TestDVideo2HDMI.vhd
 set_global_assignment -name VHDL_FILE SevenSegmentDriver.vhd
 set_global_assignment -name VHDL_FILE DVideo2HDMI.vhd
@@ -206,34 +207,54 @@ set_instance_assignment -name IO_STANDARD "1.2 V" -to SWITCH[2]
 set_instance_assignment -name IO_STANDARD "1.2 V" -to SWITCH[1]
 set_instance_assignment -name IO_STANDARD "1.2 V" -to SWITCH[0]
 set_instance_assignment -name IO_STANDARD "1.2 V" -to SWITCH
-set_location_assignment PIN_T21 -to DVID_RGB[0]
-set_location_assignment PIN_D26 -to DVID_RGB[1]
-set_location_assignment PIN_K25 -to DVID_RGB[2]
-set_location_assignment PIN_E26 -to DVID_RGB[3]
-set_location_assignment PIN_K26 -to DVID_RGB[4]
-set_location_assignment PIN_M26 -to DVID_RGB[5]
-set_location_assignment PIN_M21 -to DVID_RGB[6]
-set_location_assignment PIN_P20 -to DVID_RGB[7]
-set_location_assignment PIN_T22 -to DVID_SYNC
-set_location_assignment PIN_T19 -to DVID_CLK
-set_location_assignment PIN_U19 -to DVID_RGB[8]
-set_location_assignment PIN_U22 -to DVID_RGB[9]
-set_location_assignment PIN_P8 -to DVID_RGB[10]
-set_location_assignment PIN_R8 -to DVID_RGB[11]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_CLK
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[11]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[10]
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to CLK50
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[9]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[8]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[7]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[6]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[5]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[4]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[3]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[2]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[1]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB[0]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_SYNC
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to DVID_RGB
+set_global_assignment -name QIP_FILE PLL_70_9.qip
+set_global_assignment -name SIP_FILE PLL_70_9.sip
+set_location_assignment PIN_R9 -to GPO[16]
+set_location_assignment PIN_R10 -to GPO[17]
+set_location_assignment PIN_F26 -to GPO[18]
+set_location_assignment PIN_Y9 -to GPO[19]
+set_location_assignment PIN_G26 -to GPO[20]
+set_location_assignment PIN_Y8 -to GPO[21]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPO[18]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPO[19]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPO[20]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPO[21]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPO
+set_location_assignment PIN_T21 -to GPI[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[0]
+set_location_assignment PIN_D26 -to GPI[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[1]
+set_location_assignment PIN_K25 -to GPI[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[2]
+set_location_assignment PIN_E26 -to GPI[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[3]
+set_location_assignment PIN_K26 -to GPI[4]
+set_location_assignment PIN_M26 -to GPI[5]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[5]
+set_location_assignment PIN_M21 -to GPI[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[6]
+set_location_assignment PIN_P20 -to GPI[7]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[7]
+set_location_assignment PIN_T22 -to GPI[8]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[8]
+set_location_assignment PIN_T19 -to GPI[9]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[9]
+set_location_assignment PIN_AA7 -to GPI[10]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[10]
+set_location_assignment PIN_AA6 -to GPI[11]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[11]
+set_location_assignment PIN_U19 -to GPI[12]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[12]
+set_location_assignment PIN_U22 -to GPI[13]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[13]
+set_location_assignment PIN_P8 -to GPI[14]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[14]
+set_location_assignment PIN_R8 -to GPI[15]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[15]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI
+set_global_assignment -name QIP_FILE PLL_63_0.qip
+set_global_assignment -name SIP_FILE PLL_63_0.sip
+set_global_assignment -name VECTOR_WAVEFORM_FILE Atan2Test.vwf
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

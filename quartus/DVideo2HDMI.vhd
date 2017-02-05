@@ -14,10 +14,6 @@ entity DVideo2HDMI is
 		SWITCH: in STD_LOGIC_VECTOR(9 downto 0);
 		BUTTON: in STD_LOGIC_VECTOR(3 downto 0);
 		LED:  out STD_LOGIC_VECTOR (17 downto 0);
-		HEX0: out STD_LOGIC_VECTOR (6 downto 0);
-		HEX1: out STD_LOGIC_VECTOR (6 downto 0);
-		HEX2: out STD_LOGIC_VECTOR (6 downto 0);
-		HEX3: out STD_LOGIC_VECTOR (6 downto 0);
 		
 	   -- HDMI interface
 		adv7511_scl: inout std_logic; 
@@ -101,11 +97,11 @@ begin
 		if rising_edge(CLK50) then
 			if a2(13)=b1(13) and b1(13)/=level then
 				level := b1(13);
-				data := b2(12 downto 0);
+				data := b3(12 downto 0);
 				available := '1';
 			elsif a1(13)=b1(13) and b1(13)/=level then
 				level := b1(13);
-				data := a2(12 downto 0);
+				data := a3(12 downto 0);
 				available := '1';
 			else
 				available := '0';
@@ -134,27 +130,6 @@ begin
 			
   ------------------- process the pixel stream ------------------------
   process (CLK50)	    
-	-- special mode to receive 8-bit values from atari 800
-  	type T_rgbtable is array (0 to 255) of integer range 0 to 4095;
-   constant rgbtable : T_rgbtable := (
-		16#000#,16#111#,16#222#,16#333#,16#444#,16#555#,16#666#,16#777#,16#888#,16#999#,16#aaa#,16#bbb#,16#ccc#,16#ddd#,16#eee#,16#fff#,
-		16#310#,16#410#,16#520#,16#620#,16#730#,16#930#,16#a40#,16#b40#,16#c50#,16#d50#,16#f60#,16#f71#,16#f83#,16#f95#,16#fa7#,16#fb8#,
-		16#300#,16#400#,16#500#,16#600#,16#700#,16#900#,16#a00#,16#b00#,16#c00#,16#d00#,16#f00#,16#f12#,16#f33#,16#f55#,16#f77#,16#f89#,
-		16#301#,16#401#,16#502#,16#602#,16#703#,16#903#,16#a04#,16#b04#,16#c05#,16#d05#,16#f06#,16#f17#,16#f38#,16#f59#,16#f7a#,16#f8b#,
-		16#302#,16#403#,16#504#,16#605#,16#706#,16#907#,16#a08#,16#b09#,16#c0a#,16#d0b#,16#f0c#,16#f1d#,16#f3d#,16#f5d#,16#f7d#,16#f8e#,
-		16#203#,16#204#,16#305#,16#406#,16#507#,16#609#,16#70a#,16#70b#,16#80c#,16#90d#,16#a0f#,16#b1f#,16#b3f#,16#c5f#,16#c7f#,16#d8f#,
-		16#003#,16#104#,16#105#,16#106#,16#207#,16#209#,16#20a#,16#30b#,16#30c#,16#30d#,16#40f#,16#51f#,16#63f#,16#85f#,16#97f#,16#a8f#,
-		16#003#,16#004#,16#005#,16#006#,16#017#,16#019#,16#01a#,16#01b#,16#01c#,16#02d#,16#02f#,16#13f#,16#35f#,16#56f#,16#78f#,16#89f#,
-		16#013#,16#024#,16#035#,16#036#,16#047#,16#059#,16#05a#,16#06b#,16#07c#,16#08d#,16#08f#,16#19f#,16#3af#,16#5bf#,16#7bf#,16#8cf#,
-		16#032#,16#044#,16#055#,16#066#,16#077#,16#098#,16#0aa#,16#0bb#,16#0cc#,16#0dd#,16#0fe#,16#1fe#,16#3fe#,16#5fe#,16#7fe#,16#8fe#,
-		16#031#,16#042#,16#053#,16#063#,16#074#,16#095#,16#0a5#,16#0b6#,16#0c7#,16#0d7#,16#0f8#,16#1f9#,16#3fa#,16#5fa#,16#7fb#,16#8fc#,
-		16#030#,16#040#,16#050#,16#060#,16#071#,16#091#,16#0a1#,16#0b1#,16#0c1#,16#0d1#,16#0f1#,16#1f3#,16#3f5#,16#5f6#,16#7f8#,16#8f9#,
-		16#030#,16#140#,16#150#,16#160#,16#270#,16#290#,16#3a0#,16#3b0#,16#3c0#,16#4d0#,16#4f0#,16#5f1#,16#7f3#,16#8f5#,16#9f7#,16#af8#,
-		16#230#,16#340#,16#350#,16#460#,16#570#,16#690#,16#7a0#,16#8b0#,16#9c0#,16#9d0#,16#af0#,16#bf1#,16#bf3#,16#cf5#,16#cf7#,16#df8#,
-		16#320#,16#430#,16#540#,16#650#,16#760#,16#970#,16#a80#,16#b90#,16#ca0#,16#db0#,16#fc0#,16#fd1#,16#fd3#,16#fd5#,16#fd7#,16#fe8#,
-		16#310#,16#410#,16#520#,16#620#,16#730#,16#930#,16#a40#,16#b40#,16#c50#,16#d50#,16#f60#,16#f71#,16#f83#,16#f95#,16#fa7#,16#fb8#
-	);	
-	
 	
 	variable synclength : integer range 0 to 2000 := 0;
 	variable pixelvalue : unsigned(11 downto 0) := "000000000000";
@@ -223,11 +198,7 @@ begin
 	
 		framestart <= out_framestart;
 		
-		if SWITCH(9)='1' then
-			ram_data <= std_logic_vector(to_unsigned(rgbtable(to_integer(pixelvalue(7 downto 0))),12));	
-		else
-			ram_data <= std_logic_vector(pixelvalue);	
-		end if;
+		ram_data <= std_logic_vector(pixelvalue);	
 		
 		if y>=20 and y<20+270 then 
 	      ram_wren <= '1';
@@ -257,7 +228,7 @@ begin
 	
    variable out_hs : std_logic := '0';
 	variable out_vs : std_logic := '0';
-	variable out_rgb : unsigned (11 downto 0) := "000000000000";
+	variable out_rgb : std_logic_vector (23 downto 0) := "000000000000000000000000";
 	variable out_de : std_logic := '0';
 	
 	variable speedup : integer range 0 to 63 := 32;
@@ -298,8 +269,27 @@ begin
 			   x>=h_sync+h_bp and x<h_total-h_fp then
 
 				out_de := '1';
-				out_rgb := unsigned(ram_q);
-	
+
+				if SWITCH(1 downto 0)="00" then
+					out_rgb := ram_q(11 downto 8) 
+					         & ram_q(11 downto 8)
+								& ram_q(7 downto 4)
+								& ram_q(7 downto 4)
+								& ram_q(3 downto 0)
+								& ram_q(3 downto 0);
+				else
+					out_rgb := "000000000000000000000000";
+					if ram_q(11)='1' then
+						out_rgb(23 downto 16) := ram_q(7 downto 0);
+					end if;
+					if ram_q(10)='1' then
+						out_rgb(15 downto 8) := ram_q(7 downto 0);
+					end if;
+					if ram_q(9)='1' then
+						out_rgb(7 downto 0) := ram_q(7 downto 0);
+					end if;
+				end if;
+
 			else
      		   out_de := '0';
 			   out_rgb := (others=>'0');
@@ -343,12 +333,8 @@ begin
       adv7511_vs <= out_vs;
       adv7511_clk <= not clkpixel;
       adv7511_de <= out_de;
-  		adv7511_d <= std_logic_vector(out_rgb(11 downto 8)) 
-	              & std_logic_vector(out_rgb(11 downto 8))
-			   	  & std_logic_vector(out_rgb(7 downto 4))
-				     & std_logic_vector(out_rgb(7 downto 4))
-				     & std_logic_vector(out_rgb(3 downto 0))
-				     & std_logic_vector(out_rgb(3 downto 0));
+		adv7511_d <= out_rgb;
+							  
 	end process;
 	
 	
@@ -540,10 +526,6 @@ begin
 	process (CLK50)
 	begin
 		LED <= "000000000000000000";
-		HEX0 <= "0000000";
-		HEX1 <= "0000000";
-		HEX2 <= "0000000";
-		HEX3 <= "0000000";
 	end process;
 	
 end immediate;

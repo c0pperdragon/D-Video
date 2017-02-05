@@ -75,14 +75,14 @@ begin
 	variable GRAFP2 : std_logic_vector (7 downto 0) := "00000000";
 	variable GRAFP3 : std_logic_vector (7 downto 0) := "00000000";
 	variable GRAFM  : std_logic_vector (7 downto 0) := "00000000";
-	variable COLPM0 : std_logic_vector (7 downto 1) := "0000000";
-	variable COLPM1 : std_logic_vector (7 downto 1) := "0000000";
-	variable COLPM2 : std_logic_vector (7 downto 1) := "0000000";
-	variable COLPM3 : std_logic_vector (7 downto 1) := "0000000";
+	variable COLPM0 : std_logic_vector (7 downto 1) := "0001100";
+	variable COLPM1 : std_logic_vector (7 downto 1) := "0010100";
+	variable COLPM2 : std_logic_vector (7 downto 1) := "0011100";
+	variable COLPM3 : std_logic_vector (7 downto 1) := "0010000";
 	variable COLPF0 : std_logic_vector (7 downto 1) := "0100010";
-	variable COLPF1 : std_logic_vector (7 downto 1) := "0100110";
-	variable COLPF2 : std_logic_vector (7 downto 1) := "0011010";
-	variable COLPF3 : std_logic_vector (7 downto 1) := "0011111";
+	variable COLPF1 : std_logic_vector (7 downto 1) := "1100110";
+	variable COLPF2 : std_logic_vector (7 downto 1) := "0110100";
+	variable COLPF3 : std_logic_vector (7 downto 1) := "0111111";
 	variable COLBK  : std_logic_vector (7 downto 1) := "0000000";
 	variable PRIOR  : std_logic_vector (7 downto 0) := "00000000";
 	variable VDELAY : std_logic_vector (7 downto 0) := "00000000";
@@ -296,7 +296,7 @@ begin
 			if tmp_colorlines(7 downto 0) /= "00000000" then
 				tmp_colorlines(8) := '0';
 			end if;
-			-- normally every PM cancels PM with higher value
+			-- normally every PM cancels PM with higher index
 			if PRIOR(5)='0' then
 				if tmp_colorlines(0)='1' then
 					tmp_colorlines(3 downto 1) := "000";
@@ -370,7 +370,7 @@ begin
 			
 			-- generate csync --
 			out_sync := '1';
-			if hcounter<30 then
+			if hcounter<40 then -- 30 then
 				out_sync := '0';
 			end if;		
 			if vcounter<10 then 
@@ -400,7 +400,7 @@ begin
 		
 		--------------------- logic for the cpu/data bus -------------------			
 		if falling_edge(clk) then
-			----- let cPU write to the registers (at second clock where rw is asserted) --
+			----- let CPU write to the registers (at second clock where rw is asserted) --
 			if (CS='1') and (RW='1') and (prevrw='1') then
 				case not A is
 					when "00000" => HPOSP0 := not D;

@@ -1,0 +1,9 @@
+Analysis & Synthesis Status : Successful - Wed Jan 18 22:13:30 2017
+Quartus Prime Version : 16.0.0 Build 211 04/27/2016 SJ Lite Edition
+Revision Name : AtariMod
+Top-level Entity Name : VIC2DVideo
+Family : MAX V
+Total logic elements : 44
+Total pins : 32
+Total virtual pins : 0
+UFM blocks : 0 / 1 ( 0 % )

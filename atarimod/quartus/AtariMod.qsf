@@ -64,7 +64,6 @@ set_location_assignment PIN_69 -to DVID_RGB[2]
 set_location_assignment PIN_67 -to DVID_RGB[1]
 set_location_assignment PIN_61 -to DVID_RGB[0]
 set_location_assignment PIN_83 -to DVID_SYNC
-set_location_assignment PIN_12 -to CLK100
 set_location_assignment PIN_85 -to DVID_CLK
 set_global_assignment -name VHDL_FILE GTIA2DVideo.vhd
 set_global_assignment -name VHDL_FILE TestPattern.vhd
