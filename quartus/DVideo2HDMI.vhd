@@ -26,7 +26,8 @@ entity DVideo2HDMI is
 	
 		-- DVideo input -----
 		DVID_CLK    : in std_logic;
-		DVID_SYNC   : in std_logic;
+		DVID_HSYNC  : in std_logic;
+		DVID_VSYNC  : in std_logic;
 		DVID_RGB    : in STD_LOGIC_VECTOR(11 downto 0)
 	);	
 end entity;
@@ -58,7 +59,8 @@ architecture immediate of DVideo2HDMI is
 	                    -- incomming data (already aligned with CLK50)	
 	signal in_available : std_logic;
 	signal in_rgb : std_logic_vector(11 downto 0);
-	signal in_sync : std_logic;
+	signal in_hsync : std_logic;
+	signal in_vsync : std_logic;
 	
 	signal clkpixel : std_logic;         -- pixel clock to drive HDMI 
 	signal framestart : std_logic;       -- signals the first part of an incomming video frame  
@@ -80,28 +82,28 @@ begin
   -- delay signales to get a zero-hold time trigger on DVID_CLK 
 
   process (CLK50) 
-  variable a0 : std_logic_vector(13 downto 0) := "00000000000000";
-  variable b0 : std_logic_vector(13 downto 0) := "00000000000000";
-  variable a1 : std_logic_vector(13 downto 0) := "00000000000000";
-  variable b1 : std_logic_vector(13 downto 0) := "00000000000000";
-  variable a2 : std_logic_vector(13 downto 0) := "00000000000000";
-  variable b2 : std_logic_vector(13 downto 0) := "00000000000000";
-  variable a3 : std_logic_vector(13 downto 0) := "00000000000000";
-  variable b3 : std_logic_vector(13 downto 0) := "00000000000000";
+  variable a0 : std_logic_vector(14 downto 0) := "000000000000000";
+  variable b0 : std_logic_vector(14 downto 0) := "000000000000000";
+  variable a1 : std_logic_vector(14 downto 0) := "000000000000000";
+  variable b1 : std_logic_vector(14 downto 0) := "000000000000000";
+  variable a2 : std_logic_vector(14 downto 0) := "000000000000000";
+  variable b2 : std_logic_vector(14 downto 0) := "000000000000000";
+  variable a3 : std_logic_vector(14 downto 0) := "000000000000000";
+  variable b3 : std_logic_vector(14 downto 0) := "000000000000000";
   variable level : std_logic := '0';
   
-  variable data : std_logic_vector(12 downto 0) := "0000000000000";
+  variable data : std_logic_vector(13 downto 0) := "00000000000000";
   variable available : std_logic := '0';
   begin
 		-- only on rising edge, check what DVID_CLK edge has happened
 		if rising_edge(CLK50) then
-			if a2(13)=b1(13) and b1(13)/=level then
-				level := b1(13);
-				data := b3(12 downto 0);
+			if a2(14)=b1(14) and b1(14)/=level then
+				level := b1(14);
+				data := b3(13 downto 0);
 				available := '1';
-			elsif a1(13)=b1(13) and b1(13)/=level then
-				level := b1(13);
-				data := a3(12 downto 0);
+			elsif a1(14)=b1(14) and b1(14)/=level then
+				level := b1(14);
+				data := a3(13 downto 0);
 				available := '1';
 			else
 				available := '0';
@@ -116,22 +118,22 @@ begin
 			a3 := a2;
 			a2 := a1;
 			a1 := a0;
-			a0 := DVID_CLK & DVID_SYNC & DVID_RGB;			
+			a0 := DVID_CLK & DVID_HSYNC & DVID_VSYNC & DVID_RGB;			
 		end if;		
 	   if falling_edge(CLK50) then
-			b0 := DVID_CLK & DVID_SYNC & DVID_RGB;
+			b0 := DVID_CLK & DVID_HSYNC & DVID_VSYNC & DVID_RGB;
       end if;
 
 		in_available <= available;
+		in_hsync <= data(13);
+		in_vsync <= data(12);
 		in_rgb <= data(11 downto 0);
-		in_sync <= data(12);
   end process; 
 			
 			
   ------------------- process the pixel stream ------------------------
   process (CLK50)	    
 	
-	variable synclength : integer range 0 to 2000 := 0;
 	variable pixelvalue : unsigned(11 downto 0) := "000000000000";
 	variable x : integer range 0 to 1023 := 0;
 	variable y : integer range 0 to 511 := 0;
@@ -142,7 +144,6 @@ begin
 		if rising_edge(CLK50) then
 		
 		  if RST='0' then
-			   synclength := 0;
 				pixelvalue := (others => '0');
 			   x := 0;
 			   y := 0;
@@ -150,43 +151,31 @@ begin
 		  -- process whenever there is new incomming data  
 		  elsif in_available='1' then
 		  										
-			-- while sync and count is length and fix horizontal to 0
-			if in_sync='0' then 
-				if synclength<2000 then
-					synclength := synclength + 1;
-				end if;
+			-- sync signals reset the counter
+			if in_vsync='0' then 
 				
+				y:= 0;
 				x:= 0;
 	         pixelvalue := (others => '0');
 				
-			-- detected end of sync, check if it was vsync
-         elsif synclength > 0 then
-				
-			   -- this was vsync
-				if synclength > 100 then
-				   y := 0;
-				-- otherwise just hsync
-				elsif y<511 then
-				   y := y+1;
+			elsif in_hsync='0' then
+				if x>0 then 
+					y := y+1;
 				end if;
+				x:=0;
+	         pixelvalue := (others => '0');				
 
-				synclength := 0;
-	         pixelvalue := (others => '0');
-			-- normal image 
-			else 
-					
-				synclength := 0;
-            pixelvalue := unsigned(in_rgb);
-			
-				-- progress the horizontal counter
+			-- progress the horizontal counter
+			else 			
 				if x<1023 then
 				   x := x+1;
 				end if;
+            pixelvalue := unsigned(in_rgb);
 					
 			end if;
 
 		  -- detect frame start and notify the HDMI signal generator
-		  if y=46 then
+		  if y=10 then
    		  out_framestart := '1';
 		  else
 		     out_framestart := '0';
@@ -199,15 +188,9 @@ begin
 		framestart <= out_framestart;
 		
 		ram_data <= std_logic_vector(pixelvalue);	
-		
-		if y>=20 and y<20+270 then 
-	      ram_wren <= '1';
-			ram_wraddress <= std_logic_vector(to_unsigned(y-20,6)) 
+		ram_wren <= '1';
+		ram_wraddress <= std_logic_vector(to_unsigned(y,6)) 
 		               & std_logic_vector(to_unsigned(x,9));
-		else
-	      ram_wren <= '0';	
-			ram_wraddress <= (others => '0');
-      end if;	
 	end process;	
 	
 	
@@ -270,7 +253,7 @@ begin
 
 				out_de := '1';
 
-				if SWITCH(1 downto 0)="00" then
+				if SWITCH(3 downto 0)="0000" then
 					out_rgb := ram_q(11 downto 8) 
 					         & ram_q(11 downto 8)
 								& ram_q(7 downto 4)

@@ -154,16 +154,12 @@ set_global_assignment -name QIP_FILE VideoRAM.qip
 set_global_assignment -name SDC_FILE DVideo2HDMI.sdc
 set_global_assignment -name CDF_FILE db/Running.cdf
 set_global_assignment -name CDF_FILE Programming.cdf
-set_global_assignment -name QIP_FILE PLL_HDMI.qip
-set_global_assignment -name SIP_FILE PLL_HDMI.sip
-set_global_assignment -name QIP_FILE PLLCONF_HDMI.qip
-set_global_assignment -name SIP_FILE PLLCONF_HDMI.sip
 set_global_assignment -name QIP_FILE PLL_119_5.qip
 set_global_assignment -name SIP_FILE PLL_119_5.sip
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
-set_instance_assignment -name IO_STANDARD "1.2-V HSUL" -to BUTTON[3]
+set_instance_assignment -name IO_STANDARD "1.2 V" -to BUTTON[3]
 set_instance_assignment -name IO_STANDARD "1.2 V" -to BUTTON[2]
 set_instance_assignment -name IO_STANDARD "1.2 V" -to BUTTON[1]
 set_instance_assignment -name IO_STANDARD "1.2 V" -to BUTTON[0]
@@ -208,53 +204,81 @@ set_instance_assignment -name IO_STANDARD "1.2 V" -to SWITCH[1]
 set_instance_assignment -name IO_STANDARD "1.2 V" -to SWITCH[0]
 set_instance_assignment -name IO_STANDARD "1.2 V" -to SWITCH
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to CLK50
-set_global_assignment -name QIP_FILE PLL_70_9.qip
-set_global_assignment -name SIP_FILE PLL_70_9.sip
-set_location_assignment PIN_R9 -to GPO[16]
-set_location_assignment PIN_R10 -to GPO[17]
-set_location_assignment PIN_F26 -to GPO[18]
-set_location_assignment PIN_Y9 -to GPO[19]
-set_location_assignment PIN_G26 -to GPO[20]
-set_location_assignment PIN_Y8 -to GPO[21]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPO[18]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPO[19]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPO[20]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPO[21]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPO
-set_location_assignment PIN_T21 -to GPI[0]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[0]
-set_location_assignment PIN_D26 -to GPI[1]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[1]
-set_location_assignment PIN_K25 -to GPI[2]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[2]
-set_location_assignment PIN_E26 -to GPI[3]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[4]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[3]
-set_location_assignment PIN_K26 -to GPI[4]
-set_location_assignment PIN_M26 -to GPI[5]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[5]
-set_location_assignment PIN_M21 -to GPI[6]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[6]
-set_location_assignment PIN_P20 -to GPI[7]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[7]
-set_location_assignment PIN_T22 -to GPI[8]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[8]
-set_location_assignment PIN_T19 -to GPI[9]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[9]
-set_location_assignment PIN_AA7 -to GPI[10]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[10]
-set_location_assignment PIN_AA6 -to GPI[11]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[11]
-set_location_assignment PIN_U19 -to GPI[12]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[12]
-set_location_assignment PIN_U22 -to GPI[13]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[13]
-set_location_assignment PIN_P8 -to GPI[14]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[14]
-set_location_assignment PIN_R8 -to GPI[15]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI[15]
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPI
 set_global_assignment -name QIP_FILE PLL_63_0.qip
 set_global_assignment -name SIP_FILE PLL_63_0.sip
 set_global_assignment -name VECTOR_WAVEFORM_FILE Atan2Test.vwf
+set_location_assignment PIN_T21 -to GPIO0
+set_location_assignment PIN_D26 -to GPIO1
+set_location_assignment PIN_K25 -to GPIO2
+set_location_assignment PIN_E26 -to GPIO3
+set_location_assignment PIN_K26 -to GPIO4
+set_location_assignment PIN_M26 -to GPIO5
+set_location_assignment PIN_M21 -to GPIO6
+set_location_assignment PIN_P20 -to GPIO7
+set_location_assignment PIN_T22 -to GPIO8
+set_location_assignment PIN_T19 -to GPIO9
+set_location_assignment PIN_AA7 -to GPIO10
+set_location_assignment PIN_AA6 -to GPIO11
+set_location_assignment PIN_U19 -to GPIO12
+set_location_assignment PIN_U22 -to GPIO13
+set_location_assignment PIN_P8 -to GPIO14
+set_location_assignment PIN_R8 -to GPIO15
+set_location_assignment PIN_R9 -to GPIO16
+set_location_assignment PIN_R10 -to GPIO17
+set_location_assignment PIN_F26 -to GPIO18
+set_location_assignment PIN_Y9 -to GPIO19
+set_location_assignment PIN_G26 -to GPIO20
+set_location_assignment PIN_Y8 -to GPIO21
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO0
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO21
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO20
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO19
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO18
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO17
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO16
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO15
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO14
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO13
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO12
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO11
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO10
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO9
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO8
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO7
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO6
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO5
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO4
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO3
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO2
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO1
+set_instance_assignment -name IO_STANDARD "1.2 V" -to BUTTON
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_clk
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_vs
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_hs
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_de
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[23]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[22]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[21]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[20]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[19]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[18]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[17]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[16]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[15]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[14]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[13]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[12]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[11]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[10]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[9]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[8]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[7]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[5]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

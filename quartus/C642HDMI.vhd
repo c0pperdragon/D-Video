@@ -35,15 +35,134 @@ entity C642HDMI is
       adv7511_de : out std_logic;
 		
 		-- GPIO on board
-		GPI: in std_logic_vector(15 downto 0);
-		GPO: out std_logic_vector(21 downto 16)
+		GPIO0: in std_logic;
+		GPIO1: in std_logic;
+		GPIO2: in std_logic;
+		GPIO3: in std_logic;
+		GPIO4: in std_logic;
+		GPIO5: in std_logic;
+		GPIO6: in std_logic;
+		GPIO7: in std_logic;
+		GPIO8: out std_logic;
+		GPIO9: out std_logic;
+		GPIO10: out std_logic;
+		GPIO11: out std_logic;
+		GPIO12: out std_logic;
+		GPIO13: out std_logic;
+		GPIO14: in std_logic;
+		GPIO15: in std_logic;
+		GPIO16: in std_logic;
+		GPIO17: in std_logic;
+		GPIO18: in std_logic;
+		GPIO19: in std_logic;
+		GPIO20: in std_logic;
+		GPIO21: in std_logic
 	);	
 end entity;
 
 
 architecture immediate of C642HDMI is
 	
+	
+	subtype int1 is integer range 0 to 1;
+	subtype int2 is integer range 0 to 3;
+	subtype int3 is integer range 0 to 7;
+	subtype int08 is integer range 0 to 8;
+	subtype int4 is integer range 0 to 15;
+	subtype int8 is integer range 0 to 255;
+	subtype int10 is integer range 0 to 1023;
+	subtype int12 is integer range 0 to 4095;
+  	type T_lumtable is array (0 to 8) of int8;
+  	type T_coltable is array (0 to 15) of int8;
 
+	function calculatelumindex(lum:int8; lumtable:t_lumtable) return int08 is
+		type T_threasholds is array(0 to 7) of int8;
+		variable threasholds : T_threasholds;
+		variable tmp : integer range 0 to 511;
+		begin
+			for i in 0 to 7 loop
+				tmp := lumtable(i);
+				tmp := tmp + lumtable(i+1);
+				tmp := tmp/2;
+				threasholds(i) := tmp; 
+			end loop;
+			if lum<threasholds(7) then
+				if lum<threasholds(3) then
+					if lum<threasholds(1) then
+						if lum<threasholds(0) then return 0; else return 1; end if;
+					else
+						if lum<threasholds(2) then return 2; else return 3; end if;
+					end if;
+				else
+					if lum<threasholds(5) then
+						if lum<threasholds(4) then return 4; else return 5; end if;
+					else
+						if lum<threasholds(6) then return 6; else return 7; end if;
+					end if;
+				end if;
+			else 
+				return 8;
+			end if;
+		end calculatelumindex;
+
+		
+	function distance(a:int8; b:int8) return int10 is
+		begin
+			if a<b then 
+				return b-a;
+			else
+				return a-b;
+			end if;
+		end distance;
+		
+	function colordistance(col0:int8; col1:int8; ref0:int8; ref1:int8) return int10 is
+		begin
+			return distance(col0,ref0)*2 + distance(col1,ref1);
+		end colordistance;
+	
+		
+	function determinecolor2(col0:int8; col1:int8; 
+		coltable0:T_coltable; coltable1:T_coltable; 
+		test0:int4; test1:int4) return int4 is
+		begin
+			if colordistance(col0,col1,coltable0(test0),coltable1(test0)) 
+		   <= colordistance(col0,col1,coltable0(test1),coltable1(test1)) then 
+				return test0;
+			else 
+				return test1;
+			end if;
+		end determinecolor2;
+		
+	function determinecolor4(col0:int8; col1:int8; 
+		coltable0:T_coltable; coltable1:T_coltable; 
+		test0:int4; test1:int4; test2: int4; test3: int4) return int4 is
+		variable d : int10;
+		variable best : int4;
+		variable bestdistance : int10;
+		
+		begin
+			d := colordistance(col0,col1,coltable0(test0),coltable1(test0));
+			best := test0;
+			bestdistance := d;
+			d := colordistance(col0,col1,coltable0(test1),coltable1(test1));
+			if d<bestdistance then
+				best := test1;
+				bestdistance := d;
+			end if;
+			d := colordistance(col0,col1,coltable0(test2),coltable1(test2));
+			if d<bestdistance then
+				best := test2;
+				bestdistance := d;
+			end if;
+			d := colordistance(col0,col1,coltable0(test3),coltable1(test3));
+			if d<bestdistance then
+				best := test3;
+				bestdistance := d;
+			end if;
+			return best;
+		end determinecolor4;
+
+		
    component PLL_63_0 is
 	port (
 		refclk   : in  std_logic; --  refclk.clk
@@ -74,7 +193,8 @@ architecture immediate of C642HDMI is
 
 		-- DVideo input -----
 		DVID_CLK    : in std_logic;
-		DVID_SYNC   : in std_logic;
+		DVID_HSYNC  : in std_logic;
+		DVID_VSYNC  : in std_logic;
 		DVID_RGB    : in STD_LOGIC_VECTOR(11 downto 0)
 	);	
 	end component;
@@ -88,103 +208,12 @@ architecture immediate of C642HDMI is
 	end component;
 
 	
-		subtype int8 is integer range 0 to 255;
-		subtype int16 is integer range 0 to 65535;
-	  	type T_atan is array (0 to 63) of integer range 0 to 31;
-		constant atan : T_atan := (
-			0,  0, 1, 1, 2, 3, 3, 4, 5, 5, 6, 6, 7, 8, 8, 9,
-			9, 10,11,11,12,12,13,14,14,15,15,16,16,17,17,18,
-			18,19,19,20,20,21,21,22,22,23,23,24,24,24,25,25,
-			26,26,27,27,27,28,28,28,29,29,29,30,30,31,31,31
-		);
-		-- determine the angle for a given x/y pair. 
-		-- x,y are specified in unsigned values, the real x,y offsets are the differences to  
-		-- the zero level 		
-		-- returns the angle in 256th of a full circle (values 0 - 255)
-		function atan2(zero : int8; x : int8; y : int8) return int8 is
-		variable xa : int8;
-		variable ya : int8;		
-		variable quadrant : integer range 0 to 3;
-		variable a : integer range 0 to 127;
-		variable n : integer range 0 to 65535;
-		variable m : integer range 0 to 63;
-		begin
-			-- quick termination if coordinates lie on some axis
-			if y=zero then 
-				if x>=zero then return 0;
-				else            return 128;
-				end if;
-			elsif x=zero then
-				if y>=zero then return 64;
-				else            return 192;
-				end if;
-			end if;
-			-- determine quadrant and coordinates relative to the zero level
-			if x>zero then 
-				if y>zero then 
-					xa := x-zero;
-					ya := y-zero;
-					quadrant := 0;
-				else
-					xa := x-zero;
-					ya := zero-y;
-					quadrant := 3;
-				end if;
-			else
-				if y>zero then 
-					xa := zero-x;
-					ya := y-zero;
-					quadrant := 1;
-				else
-					xa := zero-x;
-					ya := zero-y;
-					quadrant := 2;
-				end if;
-			end if; 
-			-- compute differently depending on x or y being bigger
-			if xa=ya then
-				a:= 32;
-			elsif xa>ya then
-				n := ya;
-				n := (n*64) / xa;
-				m := n;
-				a := atan(m);
-			else
-				n := xa;
-				n := (n*64) / ya;
-				m := n;
-				a := 64 - atan(m);
-			end if; 
-			-- translate back into proper quadrant
-			case quadrant is 
-			when 0 => return a;
-			when 1 => return 128-a;
-			when 2 => return 128+a;
-			when 3 => return 256-a;
-			end case;
-		end atan2;
-		
-		function distance(a : int8; b : int8) return int8 is
-		begin
-			if a>b then 
-				return a-b;
-			else
-				return b-a;
-			end if;
-		end distance;
-		
-		function sqr(a : int8) return int16 is
-		variable tmp : int16;
-		begin
-			tmp := a;
-			tmp := tmp*a;
-			return tmp;
-		end sqr;
-		
-		
+
 	signal C64REFCLK   : std_logic;  
+
 	signal DVID_CLK    : std_logic;
-	signal DVID_SYNC   : std_logic;
+	signal DVID_HSYNC  : std_logic;
+	signal DVID_VSYNC  : std_logic;
 	signal DVID_RGB    : STD_LOGIC_VECTOR(11 downto 0);
 	
 	signal digit0 : STD_LOGIC_VECTOR(3 downto 0);
@@ -193,7 +222,6 @@ architecture immediate of C642HDMI is
 	signal digit3 : STD_LOGIC_VECTOR(3 downto 0);
 	
 begin		
-
 	
 	c64referenceclockgenerator: PLL_63_0 port map (CLK50, not RST, C64REFCLK);
 		
@@ -201,7 +229,7 @@ begin
 		CLK50, RST, 
 		SWITCH, BUTTON, LED,
 		adv7511_scl, adv7511_sda, adv7511_hs, adv7511_vs, adv7511_clk, adv7511_d, adv7511_de,
-		DVID_CLK, DVID_SYNC, DVID_RGB );
+		DVID_CLK, DVID_HSYNC, DVID_VSYNC, DVID_RGB );
 	
    hex0driver : SevenSegmentDriver port map(digit0, '1', HEX0); 
    hex1driver : SevenSegmentDriver port map(digit1, '1', HEX1); 
@@ -210,15 +238,20 @@ begin
 	
   process (C64REFCLK) 
   
+  
   variable pixelclockphase : integer range 0 to 7:= 0;
   
-  variable in_lum : integer range 0 to 255;
-  variable in_col : integer range 0 to 255;
-  variable in_colaux : integer range 0 to 255;
-  variable in_colorphase : integer range 0 to 255 := 0;
-  variable in_saturation : integer range 0 to 1:= 0;
+  variable in_lum0 : int8; -- last sample
+  variable in_lum1 : int8; -- sample history 1
+  variable in_lum2 : int8; -- sample history 2
   
-  variable carrierphase : integer range 0 to 255 := 0;
+  variable in_col0 : int8; -- last sample 
+  variable in_col1 : int8; -- sample history 1
+  variable in_col2 : int8; -- sample history 2
+
+  variable lumindex : int08;
+  variable paletteindex : int4;
+
   variable syncduration : integer range 0 to 127 := 0;
   variable hpos : integer range 0 to 511 := 0;
   variable vpos : integer range 0 to 511 := 0;
@@ -227,89 +260,204 @@ begin
   variable out_colorclock : std_logic := '0';
   variable out_adccolclock : std_logic := '0';
   variable out_adclumclock : std_logic := '0';
-  variable out_debugpulse : std_logic := '0';
+  variable out_testpin : std_logic := '0';
+  variable out_dvid_clk : std_logic := '0';
+  variable out_dvid_hsync : std_logic := '0';
+  variable out_dvid_vsync : std_logic := '0';
+  variable out_dvid_rgb : STD_LOGIC_VECTOR(11 downto 0) := "000000000000";
 
-	variable out_dvid_clk : std_logic := '0';
-	variable out_dvid_sync : std_logic := '0';
-	variable out_dvid_rgb : STD_LOGIC_VECTOR(11 downto 0) := "000000000000";
-  
-  	type T_registers is array (0 to 40) of integer range 0 to 255;
-	variable registers : T_registers := (
-			70, -- 39,    -- sync threashold
-			162,   -- color signal zero line
-			23,    -- saturation threashold
-			72,255,126,184,136,159,111,208,135,111,158,125,151,209,153,186,     -- luminances for all colors
-			106,159, 214,29, 75,170, 196,65, 34,217, 154,91,  -- even line and odd line phase for colors
-			123,123, 131,99, 91,151, 198,48, 32,240
+  	type T_lumtables is array (0 to 7) of T_lumtable;
+  	variable lumtables : T_lumtables := (
+		(	0,0,0,0,0,0,0,0,0 ),
+		(	0,0,0,0,0,0,0,0,0 ),
+		(	0,0,0,0,0,0,0,0,0 ),
+		(	0,0,0,0,0,0,0,0,0 ),
+		(	0,0,0,0,0,0,0,0,0 ),
+		(	0,0,0,0,0,0,0,0,0 ),
+		(	0,0,0,0,0,0,0,0,0 ),
+		(	0,0,0,0,0,0,0,0,0 )
 	);
-	variable selectedregister : integer range 0 to 40 := 0;
+	type T_coltables is array (0 to 3) of T_coltable;
+	variable coltables0 : T_coltables := (
+		( 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ),
+		( 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ),
+		( 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ),
+		( 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 )
+	);
+	variable coltables1 : T_coltables := (
+		( 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ),
+		( 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ),
+		( 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ),
+		( 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 )
+	);
+	
+  	type T_palette is array (0 to 15) of int12;
+	constant palette : T_palette := (
+		16#000#, 16#FFF#, 16#833#, 16#7CC#, 
+		16#839#, 16#5A4#, 16#339#, 16#EE7#,
+		16#953#, 16#530#, 16#C77#, 16#444#,
+		16#777#, 16#AF9#, 16#66E#, 16#BBB#
+	);
+	
+	type T_registers is array (0 to 15) of int8;
+	variable registers : T_registers := (
+			16#26#,    -- 0: sync threashold
+			16#86#,    -- 1: color zero voltage
+			16#07#,    -- 2: gray threadshold
+			0,0,0,0,0, 
+			0,0,0,0,0,0,0,0
+	);
+		
+	
 	variable in_button : STD_LOGIC_VECTOR(3 downto 0) := "0000";
    variable prev_button : STD_LOGIC_VECTOR(3 downto 0) := "0000";
 	variable tmp_vect8 : std_logic_vector(7 downto 0);
-	variable odd : integer range 0 to 1;
 	variable suppresscolorclock : std_logic := '0';
+	
+	variable tmpquadrant : integer range 0 to 3;
+	variable tmpselected : integer range 0 to 15;
   begin
 		if rising_edge(C64REFCLK) then
-		  -- compute the phase of the color signal (do in seperate step for better pipelining)
-		  if pixelclockphase=5 then
-			in_colorphase := atan2(registers(1),in_colaux,in_col) - carrierphase;
-			
-			if sqr(distance(in_col,registers(1))) + sqr(distance(in_colaux,registers(1))) > sqr(registers(2)) then
-				in_saturation := 1;
-			else 
-				in_saturation := 0;
+		
+		  -- read next incomming digitized values at the right moment
+			tmp_vect8(7) := GPIO15;
+			tmp_vect8(6) := GPIO17;
+			tmp_vect8(5) := GPIO19;
+			tmp_vect8(4) := GPIO21;
+			tmp_vect8(3) := GPIO20;
+			tmp_vect8(2) := GPIO18;
+			tmp_vect8(1) := GPIO16;
+			tmp_vect8(0) := GPIO14;
+		   if pixelclockphase=7 then
+			   in_col2 := to_integer(unsigned(tmp_vect8));
+		   end if;
+		   if pixelclockphase=1 then
+			   in_col1 := to_integer(unsigned(tmp_vect8));
+		   end if;
+		   if pixelclockphase=3 then
+			   in_col0 := to_integer(unsigned(tmp_vect8));
+ 		   end if;  
+			tmp_vect8(7) := GPIO6;
+			tmp_vect8(6) := GPIO4;
+			tmp_vect8(5) := GPIO2;
+			tmp_vect8(4) := GPIO0;
+			tmp_vect8(3) := GPIO1;
+			tmp_vect8(2) := GPIO3;
+			tmp_vect8(1) := GPIO5;
+			tmp_vect8(0) := GPIO7;
+		   if pixelclockphase=0 then			
+			   in_lum2 := to_integer(unsigned(tmp_vect8));
+	      end if;
+		   if pixelclockphase=2 then			
+			   in_lum1 := to_integer(unsigned(tmp_vect8));
+	      end if;
+		   if pixelclockphase=4 then			
+			   in_lum0 := to_integer(unsigned(tmp_vect8));
+	      end if;
+		
+			if pixelclockphase=5 then
+				-- determine lum index according to column reference
+				lumindex := calculatelumindex(in_lum0, lumtables(hpos mod 8));
+
 			end if;
 			
-			-- overlay with reference colors
-			if SWITCH(1 downto 0) /= "00" 
-			 and vpos>=107 and vpos<=235 
-			 and hpos>=64 and hpos<96 then
-				odd := vpos mod 2;
-				case (vpos-107) / 8 is 
-				when  0 => in_lum := registers(3);  in_saturation:=0; in_colorphase:=0;
-				when  1 => in_lum := registers(4);  in_saturation:=0; in_colorphase:=0;
-				when  2 => in_lum := registers(5);  in_saturation:=1; in_colorphase:=registers(19+odd);
-				when  3 => in_lum := registers(6);  in_saturation:=1; in_colorphase:=registers(21+odd);
-				when  4 => in_lum := registers(7);  in_saturation:=1; in_colorphase:=registers(23+odd);
-				when  5 => in_lum := registers(8);  in_saturation:=1; in_colorphase:=registers(25+odd);
-				when  6 => in_lum := registers(9);  in_saturation:=1; in_colorphase:=registers(27+odd);
-				when  7 => in_lum := registers(10); in_saturation:=1; in_colorphase:=registers(29+odd);
-				when  8 => in_lum := registers(11); in_saturation:=1; in_colorphase:=registers(31+odd);
-				when  9 => in_lum := registers(12); in_saturation:=1; in_colorphase:=registers(33+odd);
-				when 10 => in_lum := registers(13); in_saturation:=1; in_colorphase:=registers(35+odd);
-				when 11 => in_lum := registers(14); in_saturation:=0; in_colorphase:=0;
-				when 12 => in_lum := registers(15); in_saturation:=0; in_colorphase:=0;
-				when 13 => in_lum := registers(16); in_saturation:=1; in_colorphase:=registers(37+odd);
-				when 14 => in_lum := registers(17); in_saturation:=1; in_colorphase:=registers(39+odd);
-				when 15 => in_lum := registers(18); in_saturation:=0; in_colorphase:=0;
-				when others => 
+		  -- compute the proper palette index
+		  if pixelclockphase=6 then
+				tmpquadrant := (hpos mod 2) + 2 * (vpos mod 2);				
+
+				case lumindex is 
+				when 0 => paletteindex:=0;
+				when 1 => 
+					paletteindex:=determinecolor2(in_col0,in_col1,
+					coltables0(tmpquadrant), coltables1(tmpquadrant), 6,9);
+				when 2 => paletteindex:=determinecolor2(in_col0,in_col1,
+					coltables0(tmpquadrant), coltables1(tmpquadrant), 11,2);
+				when 3 => 
+					paletteindex:=determinecolor2(in_col0,in_col1, 
+				   coltables0(tmpquadrant), coltables1(tmpquadrant), 4,8);
+				when 4 => 
+					paletteindex:=determinecolor4(in_col0,in_col1, 
+					coltables0(tmpquadrant), coltables1(tmpquadrant), 12,14, 5,10);
+				when 5 =>
+					paletteindex:=determinecolor4(in_col0,in_col1, 
+					coltables0(tmpquadrant), coltables1(tmpquadrant), 12,14, 5,10);
+				when 6 =>
+					paletteindex:=determinecolor2(in_col0,in_col1, 
+				   coltables0(tmpquadrant), coltables1(tmpquadrant), 15,3);
+				when 7 => 
+					paletteindex:=determinecolor2(in_col0,in_col1, 
+					coltables0(tmpquadrant), coltables1(tmpquadrant), 7,13);
+				when 8 => paletteindex:=1;
 				end case;
-			end if;
- 	     end if;
-
+		  end if;
 		  
-		   -- calculate the DVID signals and progress pixel counter
-		  if pixelclockphase=6 then 
-			out_dvid_clk := not out_dvid_clk;
-			                           -- when entering here: (top line on screen has oddline=1)
-
-			-- sense the phase of the carrier during color burst or just let it run free
-			if hpos<15 then
-				carrierphase := atan2(registers(1),in_colaux,in_col);
+		  -- read in the calibration data (when buttons pressed)
+		  if pixelclockphase=6 and (BUTTON(0)='0' or BUTTON(1)='0') then
+				if vpos=109 and hpos>=94 and hpos<94+16*16 and ((hpos-94) mod 16) < 8 then
+					case (hpos-94) / 16 is
+					when 0  => lumtables(hpos mod 8)(0) := in_lum0;
+					when 6  => lumtables(hpos mod 8)(1) := in_lum0;
+					when 11 => lumtables(hpos mod 8)(2) := in_lum0;
+					when 4  => lumtables(hpos mod 8)(3) := in_lum0;
+					when 12 => lumtables(hpos mod 8)(4) := in_lum0;
+					when 5  => lumtables(hpos mod 8)(5) := in_lum0;
+					when 15 => lumtables(hpos mod 8)(6) := in_lum0;
+					when 7  => lumtables(hpos mod 8)(7) := in_lum0;
+					when 1  => lumtables(hpos mod 8)(8) := in_lum0;
+					when others =>
+					end case;			
+					paletteindex := 0; -- mark sample points
+				end if;
+		  
+				if vpos>=112 and vpos<114 and hpos>=94 and hpos<94+16*16  and ((hpos-94) mod 16) < 2 then
+					tmpquadrant := (hpos mod 2) + 2 * (vpos mod 2);				
+					coltables0(tmpquadrant)((hpos-94)/16) := in_col0;					
+					coltables1(tmpquadrant)((hpos-94)/16) := in_col1;					
+					paletteindex := 0; -- mark sample points
+				end if;
+			end if;	
+		  
+		   -- calculate the DVID signals
+		  if pixelclockphase=7 then 
+			if vpos=118 and hpos=94 then 
+				out_testpin := '1';
 			else
-				carrierphase := carrierphase + 128;
+				out_testpin := '0';
 			end if;
-
-			-- generate debug pulse
-			if hpos=100 and ((SWITCH(2)='0' and vpos=107) or (SWITCH(2)='1' and vpos=108)) then
-				out_debugpulse := '1';
+		  
+			out_dvid_clk := not out_dvid_clk;
+			if vpos<40 then
+				out_dvid_vsync := '0';
 			else
-				out_debugpulse := '0';
+				out_dvid_vsync := '1';
+			end if;
+			if hpos<40 then
+				out_dvid_hsync := '0';
+			else
+				out_dvid_hsync := '1';
 			end if;
 			
+			-- create output color according to switch settings
+			case SWITCH(2 downto 0) is 
+			when "000" =>
+				out_dvid_rgb := std_logic_vector(to_unsigned(palette(paletteindex),12));
+			when "001" =>
+				out_dvid_rgb := "1110" & std_logic_vector(to_unsigned(31*lumindex,8));
+			when "010" =>
+				out_dvid_rgb := "1110" & std_logic_vector(to_unsigned(in_lum0,8));
+			when "011" =>
+				out_dvid_rgb := "1110" & std_logic_vector(to_unsigned(in_col0,8));
+--			when "100" =>
+--				if isgray='1' then
+--					out_dvid_rgb := "111011111111";
+--				else 
+--					out_dvid_rgb := "111000000000";
+--				end if;
+			when others=>
+			end case;
+
 			-- detect sync and increment hpos and vpos counters
-			if in_lum<registers(0) then   
-				out_dvid_sync := '0';
+			if in_lum2<registers(0) then   -- 0:sync threashold   
 				if hpos>100 then 
 					vpos := vpos+1;
 				end if;
@@ -320,90 +468,54 @@ begin
 					vpos := 0;              
 				end if;
 			else
-				out_dvid_sync := '1';
 				if hpos<511 then hpos := hpos+1; end if;
 				syncduration := 0;
 			end if;
-			
-			-- create output color according to switch settings
-			case SWITCH(1 downto 0) is 
-			when "00" =>
-				out_dvid_rgb := "0000" & std_logic_vector(to_unsigned(in_lum,8));
-			when "01" =>
-				out_dvid_rgb := "1110" & std_logic_vector(to_unsigned(in_lum,8));
-			when "10" =>
-				out_dvid_rgb := "1110" & std_logic_vector(to_unsigned(in_col,8));
-			when "11" =>
---				out_dvid_rgb := "1110" & std_logic_vector(to_unsigned(in_col,8));
---				if in_saturation=1 then
---					out_dvid_rgb := "1110" & std_logic_vector(to_unsigned(in_colorphase,8));
---				else
---					out_dvid_rgb := "100010000000";
---				end if;
-				out_dvid_rgb := "1110" & std_logic_vector(to_unsigned(in_colaux,8));
-			end case;
-
 		  end if;
-		  
-		  -- read next incomming digitized values at the right moment
-		  if pixelclockphase=4 then
-			in_lum := to_integer(unsigned(
-				GPI(15 downto 15) & GPI(13) & GPI(11) & GPI(9) 
-				& GPI(7) & GPI(5) & GPI(3) & GPI(1)));
-	     end if;
-		  if pixelclockphase=2 then
-			in_colaux := to_integer(unsigned(
-				GPI(14 downto 14) & GPI(12) & GPI(10) & GPI(8) 
-				& GPI(6) & GPI(4) & GPI(2) & GPI(0)));  
-		  end if;
-		  if pixelclockphase=4 then
-			in_col := to_integer(unsigned(
-				GPI(14 downto 14) & GPI(12) & GPI(10) & GPI(8) 
-				& GPI(6) & GPI(4) & GPI(2) & GPI(0))); 
-		  end if;  
-  
-		-- generate the clock signals going into the VIC-II and the ADCs
+		    
+		  -- generate the clock signals going into the VIC-II and the ADCs
 			case pixelclockphase is
-			when 0 => pixelclockphase:=1; out_adclumclock:='0'; out_adccolclock:='0'; out_pixelclock:='1'; out_colorclock:='0';
-			when 1 => pixelclockphase:=2; out_adclumclock:='1'; out_adccolclock:='1'; out_pixelclock:='0'; out_colorclock:='0';
-			when 2 => pixelclockphase:=3; out_adclumclock:='0'; out_adccolclock:='0'; out_pixelclock:='0'; out_colorclock:='1'; --
-			when 3 => pixelclockphase:=4; out_adclumclock:='1'; out_adccolclock:='1'; out_pixelclock:='0'; out_colorclock:='1'; --
-			when 4 => pixelclockphase:=5; out_adclumclock:='0'; out_adccolclock:='0'; out_pixelclock:='0'; out_colorclock:=suppresscolorclock;        
-			when 5 => pixelclockphase:=6; out_adclumclock:='1'; out_adccolclock:='1'; out_pixelclock:='1'; out_colorclock:=suppresscolorclock; suppresscolorclock:='0';
-			when 6 => pixelclockphase:=7; out_adclumclock:='0'; out_adccolclock:='0'; out_pixelclock:='1'; out_colorclock:='1';
-			when 7 => pixelclockphase:=0; out_adclumclock:='1'; out_adccolclock:='1'; out_pixelclock:='1'; out_colorclock:='1'; 
+			when 0 => pixelclockphase:=1; out_adclumclock:='0'; out_adccolclock:='1'; out_pixelclock:='1'; out_colorclock:='0';
+			when 1 => pixelclockphase:=2; out_adclumclock:='1'; out_adccolclock:='0'; out_pixelclock:='1'; out_colorclock:='1';
+			when 2 => pixelclockphase:=3; out_adclumclock:='0'; out_adccolclock:='1'; out_pixelclock:='0'; out_colorclock:='1'; 
+			when 3 => pixelclockphase:=4; out_adclumclock:='1'; out_adccolclock:='0'; out_pixelclock:='0'; out_colorclock:=suppresscolorclock; -- '1'; 
+			when 4 => pixelclockphase:=5; out_adclumclock:='0'; out_adccolclock:='1'; out_pixelclock:='0'; out_colorclock:=suppresscolorclock; suppresscolorclock:='0';        
+			when 5 => pixelclockphase:=6; out_adclumclock:='1'; out_adccolclock:='0'; out_pixelclock:='0'; out_colorclock:='1';
+			when 6 => pixelclockphase:=7; out_adclumclock:='0'; out_adccolclock:='1'; out_pixelclock:='1'; out_colorclock:='1';
+			when 7 => pixelclockphase:=0; out_adclumclock:='1'; out_adccolclock:='0'; out_pixelclock:='1'; out_colorclock:='0'; 
 			end case;
 		end if;
 
 		
-		
 		-- output variables as signals
-		GPO(21) <= out_pixelclock;
-		GPO(19) <= out_colorclock;
-		GPO(17) <= out_adccolclock;
-		GPO(16) <= out_adclumclock;
-		GPO(20) <= out_debugpulse;
-		GPO(18) <= '0';
+		GPIO8  <= out_testpin;
+		GPIO9  <= out_colorclock;
+		GPIO10 <= out_adclumclock;
+		GPIO11 <= out_pixelclock;
+		GPIO12 <= out_adccolclock;
+		GPIO13 <= '0';
 
 		DVID_CLK  <= out_dvid_clk;
-		DVID_SYNC <= out_dvid_sync;
+		DVID_HSYNC <= out_dvid_hsync;
+		DVID_vSYNC <= out_dvid_vsync;
 		DVID_RGB  <= out_dvid_rgb;
 		
 		
 		------- handle the register user interface ------
+		tmpselected := to_integer(unsigned(SWITCH(9 downto 6)));
 		if rising_edge(C64REFCLK) and pixelclockphase=0 then
-			if in_button(3)='0' and prev_button(3)='1' and selectedregister>0 then
-				selectedregister := selectedregister-1;
-				suppresscolorclock := '1';
+			if in_button(3)='0' and prev_button(3)='1' then
+				registers(tmpselected) := registers(tmpselected)+1;
 			end if;
-			if in_button(2)='0' and prev_button(2)='1' and selectedregister<40 then
-				selectedregister := selectedregister+1;
+			if in_button(2)='0' and prev_button(2)='1' then
+				registers(tmpselected) := registers(tmpselected)-1;
 			end if;
-			if in_button(1)='0' and prev_button(1)='1' then
-				registers(selectedregister) := registers(selectedregister)-1;
-			end if;
+
+--			if in_button(3)='0' and prev_button(3)='1' and selectedregister>0 then
+--				selectedregister := selectedregister-1;
+--			end if;
 			if in_button(0)='0' and prev_button(0)='1' then
-				registers(selectedregister) := registers(selectedregister)+1;
+				suppresscolorclock := '1';
 			end if;
 			
 			prev_button := in_button;
@@ -411,10 +523,11 @@ begin
 		end if;
 		
 		
-		tmp_vect8 := std_logic_vector(to_unsigned(selectedregister,8));
+		tmp_vect8 := std_logic_vector(to_unsigned(tmpselected,8));
 		digit3 <= tmp_vect8(7 downto 4);
 		digit2 <= tmp_vect8(3 downto 0);
-		tmp_vect8 := std_logic_vector(to_unsigned(registers(selectedregister),8));
+		
+		tmp_vect8 := std_logic_vector(to_unsigned(registers(tmpselected), 8));
 		digit1 <= tmp_vect8(7 downto 4);
 		digit0 <= tmp_vect8(3 downto 0);
 		
