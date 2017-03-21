@@ -12,7 +12,7 @@ and transfer this signals to a converter that can generate crisp clear HDMI from
 Clearly for every computer model there is a different way how to extract video information from the
 video chip, and so the converter device must support all different signal types needed. 
 
-That will be done by using and FPGA that can be programmed the meet the specific requirements 
+That will be done by using an FPGA that can be programmed to the meet the specific requirements 
 of the system. In the first step I am using an external FPGA board (specifically the 
 Cylcone V GX starter kit), but I am planning to design and build a small fpga board that can be 
 fit into each vintage computer in question.

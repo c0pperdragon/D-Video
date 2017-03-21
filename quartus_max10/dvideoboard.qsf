@@ -1,0 +1,205 @@
+# -------------------------------------------------------------------------- #
+#
+# Copyright (C) 1991-2016 Altera Corporation. All rights reserved.
+# Your use of Altera Corporation's design tools, logic functions 
+# and other software and tools, and its AMPP partner logic 
+# functions, and any output files from any of the foregoing 
+# (including device programming or simulation files), and any 
+# associated documentation or information are expressly subject 
+# to the terms and conditions of the Altera Program License 
+# Subscription Agreement, the Altera Quartus Prime License Agreement,
+# the Altera MegaCore Function License Agreement, or other 
+# applicable license agreement, including, without limitation, 
+# that your use is for the sole purpose of programming logic 
+# devices manufactured by Altera and sold by Altera or its 
+# authorized distributors.  Please refer to the applicable 
+# agreement for further details.
+#
+# -------------------------------------------------------------------------- #
+#
+# Quartus Prime
+# Version 16.0.0 Build 211 04/27/2016 SJ Lite Edition
+# Date created = 15:30:39  March 03, 2017
+#
+# -------------------------------------------------------------------------- #
+#
+# Notes:
+#
+# 1) The default values for assignments are stored in the file:
+#		dvideoboard_assignment_defaults.qdf
+#    If this file doesn't exist, see file:
+#		assignment_defaults.qdf
+#
+# 2) Altera recommends that you do not modify this file. This
+#    file is updated automatically by the Quartus Prime software
+#    and any changes you make may be lost or overwritten.
+#
+# -------------------------------------------------------------------------- #
+
+
+set_global_assignment -name FAMILY "MAX 10"
+set_global_assignment -name DEVICE 10M08SCE144C8G
+set_global_assignment -name TOP_LEVEL_ENTITY LEDBlinker
+set_global_assignment -name ORIGINAL_QUARTUS_VERSION 16.0.0
+set_global_assignment -name PROJECT_CREATION_TIME_DATE "15:30:39  MARCH 03, 2017"
+set_global_assignment -name LAST_QUARTUS_VERSION 16.0.0
+set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR 256
+set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (VHDL)"
+set_global_assignment -name EDA_TIME_SCALE "1 ps" -section_id eda_simulation
+set_global_assignment -name EDA_OUTPUT_DATA_FORMAT VHDL -section_id eda_simulation
+set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
+set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
+set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
+set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
+set_global_assignment -name FLOW_ENABLE_POWER_ANALYZER ON
+set_global_assignment -name POWER_DEFAULT_INPUT_IO_TOGGLE_RATE "12.5 %"
+set_location_assignment PIN_89 -to adv7511_clk
+set_location_assignment PIN_111 -to adv7511_d[23]
+set_location_assignment PIN_110 -to adv7511_d[22]
+set_location_assignment PIN_106 -to adv7511_d[21]
+set_location_assignment PIN_105 -to adv7511_d[20]
+set_location_assignment PIN_102 -to adv7511_d[19]
+set_location_assignment PIN_101 -to adv7511_d[18]
+set_location_assignment PIN_100 -to adv7511_d[17]
+set_location_assignment PIN_99 -to adv7511_d[16]
+set_location_assignment PIN_98 -to adv7511_d[15]
+set_location_assignment PIN_97 -to adv7511_d[14]
+set_location_assignment PIN_96 -to adv7511_d[13]
+set_location_assignment PIN_93 -to adv7511_d[12]
+set_location_assignment PIN_92 -to adv7511_d[11]
+set_location_assignment PIN_91 -to adv7511_d[10]
+set_location_assignment PIN_90 -to adv7511_d[9]
+set_location_assignment PIN_88 -to adv7511_d[8]
+set_location_assignment PIN_87 -to adv7511_d[7]
+set_location_assignment PIN_86 -to adv7511_d[6]
+set_location_assignment PIN_85 -to adv7511_d[5]
+set_location_assignment PIN_84 -to adv7511_d[4]
+set_location_assignment PIN_81 -to adv7511_d[3]
+set_location_assignment PIN_80 -to adv7511_d[2]
+set_location_assignment PIN_79 -to adv7511_d[1]
+set_location_assignment PIN_78 -to adv7511_d[0]
+set_location_assignment PIN_77 -to adv7511_de
+set_location_assignment PIN_76 -to adv7511_hs
+set_location_assignment PIN_113 -to adv7511_scl
+set_location_assignment PIN_112 -to adv7511_sda
+set_location_assignment PIN_75 -to adv7511_vs
+set_location_assignment PIN_26 -to CLK50
+set_location_assignment PIN_6 -to LED[1]
+set_location_assignment PIN_7 -to LED[0]
+set_location_assignment PIN_70 -to INPUTS[0]
+set_location_assignment PIN_69 -to INPUTS[1]
+set_location_assignment PIN_66 -to INPUTS[2]
+set_location_assignment PIN_65 -to INPUTS[3]
+set_location_assignment PIN_64 -to INPUTS[4]
+set_location_assignment PIN_62 -to INPUTS[5]
+set_location_assignment PIN_61 -to INPUTS[6]
+set_location_assignment PIN_60 -to INPUTS[7]
+set_location_assignment PIN_59 -to INPUTS[8]
+set_location_assignment PIN_58 -to INPUTS[9]
+set_location_assignment PIN_57 -to INPUTS[10]
+set_location_assignment PIN_56 -to INPUTS[11]
+set_location_assignment PIN_55 -to INPUTS[12]
+set_location_assignment PIN_54 -to INPUTS[13]
+set_location_assignment PIN_52 -to INPUTS[14]
+set_location_assignment PIN_50 -to INPUTS[15]
+set_location_assignment PIN_48 -to INPUTS[16]
+set_location_assignment PIN_47 -to INPUTS[17]
+set_location_assignment PIN_46 -to INPUTS[18]
+set_location_assignment PIN_45 -to INPUTS[19]
+set_location_assignment PIN_44 -to INPUTS[20]
+set_location_assignment PIN_43 -to INPUTS[21]
+set_location_assignment PIN_41 -to INPUTS[22]
+set_location_assignment PIN_39 -to INPUTS[23]
+set_location_assignment PIN_38 -to INPUTS[24]
+set_location_assignment PIN_33 -to INPUTS[25]
+set_location_assignment PIN_32 -to INPUTS[26]
+set_location_assignment PIN_30 -to INPUTS[27]
+set_location_assignment PIN_29 -to INPUTS[28]
+set_location_assignment PIN_28 -to INPUTS[29]
+set_location_assignment PIN_27 -to INPUTS[30]
+set_location_assignment PIN_24 -to INPUTS[31]
+set_global_assignment -name VHDL_FILE LEDBlinker.vhd
+set_global_assignment -name VHDL_FILE DVideo2HDMI.vhd
+set_global_assignment -name VHDL_FILE TestImageGenerator.vhd
+set_global_assignment -name QIP_FILE PLL_119_5.qip
+set_global_assignment -name QIP_FILE VideoRAM.qip
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_clk
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[23]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[22]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[21]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[20]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[19]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[18]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[17]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[16]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[15]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[14]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[13]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[12]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[11]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[10]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[9]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[8]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[7]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[5]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_hs
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_de
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_scl
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_sda
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_vs
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to BUTTON
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to CLK50
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to LED[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to LED[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to LED
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[31]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[30]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[29]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[28]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[27]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[26]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[25]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[5]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[7]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[24]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[23]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[22]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[21]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[20]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[19]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[18]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[17]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[16]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[15]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[14]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[13]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[12]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[11]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[10]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[9]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS[8]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS
+set_location_assignment PIN_118 -to BUTTON
+set_location_assignment PIN_74 -to adv7511_spdif
+set_location_assignment PIN_114 -to adv7511_int
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_int
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_spdif
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
+set_global_assignment -name CDF_FILE Chain2.cdf
