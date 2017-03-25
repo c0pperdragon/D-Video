@@ -13,11 +13,13 @@ entity DVideo2HDMI is
 	   -- HDMI interface
 		adv7511_scl: inout std_logic; 
 		adv7511_sda: inout std_logic; 
+		adv7511_int : in std_logic;
       adv7511_hs : out std_logic; 
       adv7511_vs : out std_logic;
       adv7511_clk : out std_logic;
       adv7511_d : out STD_LOGIC_VECTOR(23 downto 0);
       adv7511_de : out std_logic;
+		adv7511_spdif : out std_logic;
 	
 		-- DVideo input -----
 		DVID_CLK    : in std_logic;
@@ -133,7 +135,9 @@ begin
 	variable pixelvalue : unsigned(11 downto 0) := "000000000000";
 	variable x : integer range 0 to 1023 := 0;
 	variable y : integer range 0 to 511 := 0;
-		
+	variable visiblearea : std_logic := '0';
+	variable bufferaddress : integer range 0 to 24999;
+	
 	variable out_framestart : std_logic := '0';
 	
 	begin	
@@ -146,15 +150,22 @@ begin
 				
 		  -- process whenever there is new incomming data  
 		  elsif in_available='1' then
-		  										
+		  	
+			-- compute where to store the incomming pixel data
+			visiblearea := '0';
+			bufferaddress := 0;
+			if x<400 and y<270 and in_vsync='0' and in_hsync='0' then
+				visiblearea := '1';
+				bufferaddress := (x + y*400) mod 25000;
+			end if;
+
 			-- sync signals reset the counter
-			if in_vsync='0' then 
-				
+			if in_vsync='1' then 
 				y:= 0;
 				x:= 0;
 	         pixelvalue := (others => '0');
 				
-			elsif in_hsync='0' then
+			elsif in_hsync='1' then
 				if x>0 then 
 					y := y+1;
 				end if;
@@ -170,12 +181,13 @@ begin
 					
 			end if;
 
-		  -- detect frame start and notify the HDMI signal generator
-		  if y=10 then
+		   -- detect frame start and notify the HDMI signal generator
+		   if y=10 then
    		  out_framestart := '1';
-		  else
+		   else
 		     out_framestart := '0';
-		  end if;
+		   end if;
+			
 			
 		 end if;  -- RST, processing data				 
 		end if;   
@@ -184,9 +196,8 @@ begin
 		framestart <= out_framestart;
 		
 		ram_data <= std_logic_vector(pixelvalue);	
-		ram_wren <= '1';
-		ram_wraddress <= std_logic_vector(to_unsigned(y,6)) 
-		               & std_logic_vector(to_unsigned(x,9));
+		ram_wren <= visiblearea;
+		ram_wraddress <= std_logic_vector(to_unsigned(bufferaddress,15));
 	end process;	
 	
 	
@@ -204,12 +215,16 @@ begin
 	
 	variable x : integer range 0 to h_total := 0; 
 	variable y : integer range 0 to v_total := 0;
+	variable insidevisible : std_logic;
 	
-	variable out_clk : std_logic := '0';
    variable out_hs : std_logic := '0';
 	variable out_vs : std_logic := '0';
 	variable out_rgb : std_logic_vector (23 downto 0) := "000000000000000000000000";
 	variable out_de : std_logic := '0';
+   variable out2_hs : std_logic := '0';
+	variable out2_vs : std_logic := '0';
+	variable out2_rgb : std_logic_vector (23 downto 0) := "000000000000000000000000";
+	variable out2_de : std_logic := '0';
 	
 	variable speedup : integer range 0 to 63 := 32;
 	variable in_framestart : std_logic := '0';
@@ -219,12 +234,15 @@ begin
 	variable tmp_y : integer range 0 to v_total-1;
 	variable tmp_y_us : unsigned(7 downto 0);
 	variable tmp_data : unsigned(7 downto 0);
+	variable pixelx : integer range 0 to 511;
+	variable pixely : integer range 0 to 511;
+	variable bufferaddress0 : integer range 0 to 24999;
+	variable bufferaddress1 : integer range 0 to 24999;
 	
 	begin
 		if rising_edge(clkpixel) then		
 		
          -- write output signals to registers 
-			out_clk := not out_clk;   -- using double data rate
 			if y<v_sync then
 				out_vs := '1';
 			else 
@@ -235,47 +253,25 @@ begin
 			else 
 			   out_hs := '1';
 			end if;
-   	
-			
-			tmp_x := x-(h_sync+h_bp);
-			tmp_y := y-(v_sync+v_bp);				
-
-			-- request video data for next pixel
-		   ram_rdaddress <= std_logic_vector(to_unsigned(tmp_y/4,6))
-			               & std_logic_vector(to_unsigned(tmp_x/4,9));
-
-				
-			-- determine the color according to the sample info
-			if y>=v_sync+v_bp and y<v_total-v_fp and
-			   x>=h_sync+h_bp and x<h_total-h_fp then
-
+			if x>=h_sync+h_bp and x<h_total-h_fp and y>=v_sync+v_bp and y<v_total-v_fp then
 				out_de := '1';
-
---				if SWITCH(3 downto 0)="0000" then
-					out_rgb := ram_q(11 downto 8) 
+			else
+				out_de := '0';
+			end if;
+   	
+			-- determine the color according to the sample info
+			if insidevisible='1' then
+				out_rgb :=    ram_q(11 downto 8) 
 					         & ram_q(11 downto 8)
 								& ram_q(7 downto 4)
 								& ram_q(7 downto 4)
 								& ram_q(3 downto 0)
 								& ram_q(3 downto 0);
---				else
---					out_rgb := "000000000000000000000000";
---					if ram_q(11)='1' then
---						out_rgb(23 downto 16) := ram_q(7 downto 0);
---					end if;
---					if ram_q(10)='1' then
---						out_rgb(15 downto 8) := ram_q(7 downto 0);
---					end if;
---					if ram_q(9)='1' then
---						out_rgb(7 downto 0) := ram_q(7 downto 0);
---					end if;
---				end if;
-
 			else
-     		   out_de := '0';
 			   out_rgb := (others=>'0');
 			end if;
 			
+
 			-- detect start of input frame and adjust speed to sync with it
 			if in_framestart='1' and prev_framestart='0' then
 				if y>=v_sync+v_bp+31 then 
@@ -291,7 +287,24 @@ begin
 			prev_framestart := in_framestart;
 			in_framestart := framestart;
 			
-			-- continue with next pixel in next clock
+
+			-- request video data for next pixel (pipeline computation)
+			bufferaddress1 := bufferaddress0;
+			bufferaddress0 := (pixelx+pixely*400) mod 25000;
+			
+			-- determine low-res pixel to display (and if any should be visible)
+			pixelx := (x-(h_sync+h_bp+40) + 4) / 4;
+			pixely := (y-(v_sync+v_bp-15)) / 4;
+			 if x>=(h_sync+h_bp+40) and x<(h_sync+h_bp+40+400*4) and
+			    y>=(v_sync+v_bp-15) and y<(v_sync+v_bp-15+270*4) 
+			 then 
+			   insidevisible := '1';
+			 else 
+			   insidevisible := '0';
+			 end if;
+			 
+
+			-- continue with next high-res pixel in next clock
 			if RST='0' then
 				x := 0;
 				y := 0;
@@ -305,24 +318,32 @@ begin
 				else
 				   y := y+1;
 				end if;
-				
-			 end if;
-			 
+			 end if;			
 		end if;
 		
-      adv7511_hs <= out_hs; 
-      adv7511_vs <= out_vs;
-      adv7511_clk <= out_clk; 
-      adv7511_de <= out_de;
-		adv7511_d <= out_rgb;
-							  
+		-- delay output of data by half a clock to let HDMI transmitter
+		-- take data on rising clock with proper setup and hold times
+		if falling_edge(clkpixel) then
+			out2_hs  := out_hs;
+			out2_vs  := out_vs;
+			out2_de  := out_de;
+			out2_rgb := out_rgb;
+		end if;
+		
+      adv7511_clk <= clkpixel; 
+      adv7511_hs <= out2_hs; 
+      adv7511_vs <= out2_vs;
+      adv7511_de <= out2_de;
+		adv7511_d <= out2_rgb;			
+		adv7511_spdif <= '0';
+
+		ram_rdaddress <= std_logic_vector(to_unsigned(bufferaddress1,15));
 	end process;
-	
 	
 	
 	-- send initialization data to HDMI driver via a I2C interface
 	process (CLK50)
-	  constant initdelay:integer := 100;
+	  constant initdelay:integer := 10000;
 	  -- data to be sent to the I2C slave
 	  constant num:integer := 23;	  
 	  type T_TRIPPLET is array (0 to 2) of integer range 0 to 255;
@@ -367,7 +388,7 @@ begin
 				(16#72#, 16#3B#, 16#00#)
 	  );
 	  -- divide down main clock to get slower state machine clock
-	  constant clockdivider:integer := 2000;  	  
+	  constant clockdivider:integer := 1000;  	  
 	  variable clockcounter: integer range 0 to clockdivider-1 := 0;
 
 	  -- states of the machine
