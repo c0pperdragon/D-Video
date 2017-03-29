@@ -39,7 +39,7 @@
 
 set_global_assignment -name FAMILY "MAX 10"
 set_global_assignment -name DEVICE 10M08SCE144C8G
-set_global_assignment -name TOP_LEVEL_ENTITY TestImageGenerator
+set_global_assignment -name TOP_LEVEL_ENTITY Atari800Mod
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 16.0.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "15:30:39  MARCH 03, 2017"
 set_global_assignment -name LAST_QUARTUS_VERSION 16.0.0
@@ -119,15 +119,20 @@ set_location_assignment PIN_29 -to INPUTS[28]
 set_location_assignment PIN_28 -to INPUTS[29]
 set_location_assignment PIN_27 -to INPUTS[30]
 set_location_assignment PIN_24 -to INPUTS[31]
+set_location_assignment PIN_118 -to BUTTON
+set_location_assignment PIN_74 -to adv7511_spdif
+set_location_assignment PIN_114 -to adv7511_int
+set_global_assignment -name VHDL_FILE GTIA2DVideo.vhd
+set_global_assignment -name VHDL_FILE Atari800Mod.vhd
 set_global_assignment -name VHDL_FILE LEDBlinker.vhd
 set_global_assignment -name VHDL_FILE DVideo2HDMI.vhd
 set_global_assignment -name VHDL_FILE TestImageGenerator.vhd
 set_global_assignment -name QIP_FILE PLL_119_5.qip
 set_global_assignment -name QIP_FILE VideoRAM.qip
-set_location_assignment PIN_118 -to BUTTON
-set_location_assignment PIN_74 -to adv7511_spdif
-set_location_assignment PIN_114 -to adv7511_int
 set_global_assignment -name CDF_FILE Chain2.cdf
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_clk
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[23]
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_d[22]
@@ -200,35 +205,4 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to INPUTS
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_int
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_spdif
 set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_clk
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[23]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[22]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[21]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[20]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[19]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[18]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[17]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[16]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[15]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[14]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[13]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[12]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[11]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[10]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[9]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[8]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[7]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[6]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[5]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[4]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[3]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[2]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[1]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d[0]
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_d
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_de
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_hs
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7511_vs
-set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
-set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
-set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

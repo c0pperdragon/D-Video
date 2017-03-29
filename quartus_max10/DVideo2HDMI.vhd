@@ -221,10 +221,10 @@ begin
 	variable out_vs : std_logic := '0';
 	variable out_rgb : std_logic_vector (23 downto 0) := "000000000000000000000000";
 	variable out_de : std_logic := '0';
-   variable out2_hs : std_logic := '0';
-	variable out2_vs : std_logic := '0';
-	variable out2_rgb : std_logic_vector (23 downto 0) := "000000000000000000000000";
-	variable out2_de : std_logic := '0';
+--   variable out2_hs : std_logic := '0';
+--	variable out2_vs : std_logic := '0';
+--	variable out2_rgb : std_logic_vector (23 downto 0) := "000000000000000000000000";
+--	variable out2_de : std_logic := '0';
 	
 	variable speedup : integer range 0 to 63 := 32;
 	variable in_framestart : std_logic := '0';
@@ -321,20 +321,20 @@ begin
 			 end if;			
 		end if;
 		
-		-- delay output of data by half a clock to let HDMI transmitter
-		-- take data on rising clock with proper setup and hold times
-		if falling_edge(clkpixel) then
-			out2_hs  := out_hs;
-			out2_vs  := out_vs;
-			out2_de  := out_de;
-			out2_rgb := out_rgb;
-		end if;
+--		-- delay output of data by half a clock to let HDMI transmitter
+--		-- take data on rising clock with proper setup and hold times
+--		if falling_edge(clkpixel) then
+--			out2_hs  := out_hs;
+--			out2_vs  := out_vs;
+--			out2_de  := out_de;
+--			out2_rgb := out_rgb;
+--		end if;
 		
       adv7511_clk <= clkpixel; 
-      adv7511_hs <= out2_hs; 
-      adv7511_vs <= out2_vs;
-      adv7511_de <= out2_de;
-		adv7511_d <= out2_rgb;			
+      adv7511_hs <= out_hs; 
+      adv7511_vs <= out_vs;
+      adv7511_de <= out_de;
+		adv7511_d <= out_rgb;			
 		adv7511_spdif <= '0';
 
 		ram_rdaddress <= std_logic_vector(to_unsigned(bufferaddress1,15));
