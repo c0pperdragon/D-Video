@@ -103,6 +103,7 @@ begin
 	variable tmp_bgcolor : std_logic_vector(7 downto 0);
 	variable tmp_4bitvalue : std_logic_vector(3 downto 0);
 	variable tmp_color : std_logic_vector(7 downto 0);
+	variable tmp_odd : boolean;
 
 	-- variables for player and missile display
 	variable ticker_p0 : integer range 0 to 15 := 15;
@@ -446,23 +447,35 @@ begin
 			
 			-- receive player/missile data via DMA
 			if prevhalt='0' then
+				tmp_odd := (vcounter mod 2) = 1;
 				if GRACTL(1)='1' then
-					if hcounter=3*2+1 then
+					if hcounter=3*2+1 and (VDELAY(4)='0' or tmp_odd) then
 						GRAFP0 := D;
 					end if;
-					if hcounter=4*2+1 then
+					if hcounter=4*2+1 and (VDELAY(5)='0' or tmp_odd) then
 						GRAFP1 := D;
 					end if;
-					if hcounter=5*2+1 then
+					if hcounter=5*2+1 and (VDELAY(6)='0' or tmp_odd) then
 						GRAFP2 := D;
 					end if;
-					if hcounter=6*2+1 then
+					if hcounter=6*2+1 and (VDELAY(7)='0' or tmp_odd) then
 						GRAFP3 := D;
 					end if;
 				end if;
 				if GRACTL(0)='1' then
 					if hcounter=1*2+1 then
-						GRAFM := D;
+						if VDELAY(0)='0' or tmp_odd then
+							GRAFM(1 downto 0) := D(1 downto 0);
+						end if;
+						if VDELAY(1)='0' or tmp_odd then
+							GRAFM(3 downto 2) := D(3 downto 2);
+						end if;
+						if VDELAY(2)='0' or tmp_odd then
+							GRAFM(5 downto 4) := D(5 downto 4);
+						end if;
+						if VDELAY(3)='0' or tmp_odd then
+							GRAFM(7 downto 6) := D(7 downto 6);
+						end if;
 					end if;
 				end if;
 			end if;
