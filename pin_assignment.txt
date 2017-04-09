@@ -1,0 +1,72 @@
+Pin assignments for the D-Video Board (Rev.2)
+
+32-pin GPIO-header
+Connector pin               MAX 10 pin       
+1             GND           -
+2             GPIO0         26
+3             GPIO1         24
+4             GPIO2         25
+5             GPIO3         21
+6             GPIO4         22
+7             GPIO5         14
+8             GPIO6         17
+9             GPIO7         12
+10            GPIO8         13
+11            GPIO9         10
+12            GPIO10        11
+13            GPIO11        7
+14            GPIO12        8
+15            GPIO13        141
+16            GPIO14        6
+17            GPIO15        135
+18            GPIO16        140
+19            GPIO17        131
+20            GPIO18        132
+21            GPIO19        127
+22            GPIO20        130
+23            GPIO21        123 
+24            GPIO22        124
+25            GPIO23        119
+26            GPIO24        120
+27            GPIO25        114
+28            GPIO26        118
+29            GPIO27        112
+30            GPIO28        113
+31            GPIO29        110
+32            GPIO30        111
+
+
+In-board wiring of the MAX 10
+                         MAX 10 pin
+ADV7513_SPDIF            27
+ADV7513_VSYNC            28
+ADV7513_HSYNC            29
+ADV7513_DE               30
+ADV7513_D0               32
+ADV7513_D1               33
+ADV7513_D2               38
+ADV7513_D3               39
+ADV7513_D4               41
+ADV7513_D5               43
+ADV7513_D6               44
+ADV7513_D7               45
+ADV7513_D8               46
+ADV7513_CLK              47
+ADV7513_D9               48
+ADV7513_D10              50
+ADV7513_D11              52
+ADV7513_D12              54
+ADV7513_D13              55
+ADV7513_D14              56
+ADV7513_D15              57
+ADV7513_D16              58
+ADV7513_D17              59
+ADV7513_D18              60
+ADV7513_D19              61
+ADV7513_D20              62
+ADV7513_D21              64
+ADV7513_D22              65
+ADV7513_D23              66
+ADV7513_SDA              69
+ADV7513_SCL              70
+50 MHz Clock             88        
