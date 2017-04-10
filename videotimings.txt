@@ -1,0 +1,42 @@
+HDMI Video timings 
+(using reduced blanking version 1 for 60Hz)
+  
+                            1280x1024@50  1680x1050@50  1920x1080@50
+							
+HOR FREQUENCY (kHz)			52.679        54.121        55.621
+ACTUAL VER FREQUENCY (Hz)	49.838        49.974        49.929
+PIXEL CLOCK	(MHz)			88.500        119.500       141.500
+HSYNC POLARITY				NEGATIVE      NEGATIVE      NEGATIVE
+VSYNC POLARITY				POSITIVE      POSITIVE      POSITIVE
+HOR TOTAL                   1680          2208          2544
+HOR ADDR                    1280          1680          1920
+HOR BLANK                   400           528           624
+HOR FRONT PORCH             72            88            112
+HOR SYNC                    128           176           200
+HOR BACK PORCH              200           264           312
+VER TOTAL                   1057          1083          1114
+VER ADDR                    1024          1050          1080
+VER BLANK                   33            33            34
+VER FRONT PORCH             3             3             3
+VER SYNC                    7             6             5
+VER BACK PORCH              23            24            26
+
+                            1280x1024@60  1680x1050@60  1920x1080@60
+
+HOR FREQUENCY (kHz)			63.194        64.674        66.587
+ACTUAL VER FREQUENCY (Hz)	59.957        59.993        59.934
+PIXEL CLOCK	(MHz)			91.000        119.000       138.500
+HSYNC POLARITY				POSITIVE      POSITIVE      POSTIVE
+VSYNC POLARITY				NEGATIVE      NEGATIVE      NEGATIVE
+HOR TOTAL                   1440          1840          2080
+HOR ADDR                    1280          1680          1920
+HOR BLANK                   160           160           160
+HOR FRONT PORCH             48            48            48
+HOR SYNC                    32            32            32
+HOR BACK PORCH              80            80            80
+VER TOTAL                   1054          1080          1111
+VER ADDR                    1024          1050          1080
+VER BLANK                   30            30            31
+VER FRONT PORCH             3             3             3
+VER SYNC                    7             6             5
+VER BACK PORCH              20            21            23
