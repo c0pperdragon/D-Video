@@ -21,7 +21,8 @@ entity TestImageGenerator is
 		adv7513_spdif : out std_logic;
 		
 		-- GPIO  
-		GPIO     : in std_logic_vector(30 downto 1);
+--		GPIO     : in std_logic_vector(30 downto 2);
+		GPIO1    : out std_logic;
 		GPIO0    : out std_logic
 	);	
 end entity;
@@ -48,28 +49,36 @@ architecture immediate of TestImageGenerator is
 		DVID_CLK    : in std_logic;
 		DVID_HSYNC   : in std_logic;
 		DVID_VSYNC   : in std_logic;
-		DVID_RGB    : in STD_LOGIC_VECTOR(11 downto 0)	
+		DVID_RGB    : in STD_LOGIC_VECTOR(11 downto 0);	
+		
+		-- debugging output ---
+		DEBUG : out std_logic
 	);	
 	end component;
 	
-			
+	-- communcation between components 
 	signal DVID_CLK    : std_logic;
 	signal DVID_HSYNC   : std_logic;
 	signal DVID_VSYNC   : std_logic;
 	signal DVID_RGB    : STD_LOGIC_VECTOR(11 downto 0);
+	signal DEBUG : std_logic;
+		
 begin		
 		
    part1 : DVideo2HDMI port map (
 		CLK50, '0',
 		adv7513_scl, adv7513_sda, adv7513_hs, adv7513_vs, adv7513_clk,
 		adv7513_d, adv7513_de,
-		DVID_CLK, DVID_HSYNC, DVID_VSYNC, DVID_RGB );
+		DVID_CLK, DVID_HSYNC, DVID_VSYNC, DVID_RGB,
+		DEBUG );
 
 		
-	------- audio signal (not used yet)
-	process (CLK50)
+	------- direct wiring
+	process (DEBUG)
 	begin
 		adv7513_spdif <= '0';
+		GPIO0 <= DEBUG;
+		GPIO1 <= DEBUG;
 	end process;
 		
 		
@@ -140,26 +149,8 @@ begin
 		DVID_RGB <= out_rgb;			
 	end process;
 
-
-	process (CLK50) 
-		variable ticks: integer range 0 to 49999999 := 0;
-		variable p : std_logic := '0';
-	begin
 	
-		if rising_edge(CLK50) then
-		
-			if ticks<49999999 then
-				ticks := ticks+1;
-			else
-				ticks := 0;
-				p := not p;
-			end if;
-			
-		end if;
-		
-		GPIO0 <= p;
-		
-	end process;
+	
 
 end immediate;
 

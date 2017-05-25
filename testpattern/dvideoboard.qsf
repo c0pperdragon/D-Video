@@ -122,8 +122,6 @@ set_location_assignment PIN_69 -to adv7513_sda
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7513_sda
 set_location_assignment PIN_70 -to adv7513_scl
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7513_scl
-set_location_assignment PIN_24 -to GPIO[1]
-set_instance_assignment -name IO_STANDARD "3.3 V SCHMITT TRIGGER" -to GPIO[1]
 set_location_assignment PIN_25 -to GPIO[2]
 set_instance_assignment -name IO_STANDARD "3.3 V SCHMITT TRIGGER" -to GPIO[2]
 set_location_assignment PIN_21 -to GPIO[3]
@@ -188,6 +186,9 @@ set_global_assignment -name QIP_FILE PLL_119_5.qip
 set_global_assignment -name QIP_FILE VideoRAM.qip
 set_location_assignment PIN_26 -to GPIO0
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO0
-set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7513_clk
 set_global_assignment -name CDF_FILE Chain1.cdf
+set_global_assignment -name VECTOR_WAVEFORM_FILE Waveform.vwf
+set_instance_assignment -name CURRENT_STRENGTH_NEW "MAXIMUM CURRENT" -to adv7513_clk
+set_location_assignment PIN_24 -to GPIO1
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO1
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

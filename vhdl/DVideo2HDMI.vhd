@@ -23,7 +23,10 @@ entity DVideo2HDMI is
 		DVID_CLK    : in std_logic;
 		DVID_HSYNC  : in std_logic;
 		DVID_VSYNC  : in std_logic;
-		DVID_RGB    : in STD_LOGIC_VECTOR(11 downto 0)
+		DVID_RGB    : in STD_LOGIC_VECTOR(11 downto 0);
+		
+		-- debugging output ---
+		DEBUG : out std_logic
 	);	
 end entity;
 
@@ -52,6 +55,16 @@ architecture immediate of DVideo2HDMI is
 		q		: OUT STD_LOGIC_VECTOR (11 DOWNTO 0)
 	);
 	end component;
+	
+	function hexdigit(i:integer) return integer is 
+	begin 
+		if i<=9 then
+			return i+48;
+		else
+			return i+55;
+		end if;
+	end hexdigit;
+
 	                    -- incomming data (already aligned with CLK50)	
 	signal in_available : std_logic;
 	signal in_rgb : std_logic_vector(11 downto 0);
@@ -66,6 +79,17 @@ architecture immediate of DVideo2HDMI is
 	signal ram_wraddress : STD_LOGIC_VECTOR (14 DOWNTO 0);
 	signal ram_wren : STD_LOGIC;
 	signal ram_q : STD_LOGIC_VECTOR (11 DOWNTO 0);
+	
+	-- communication between processes
+	signal i2c_idle : boolean;
+	signal i2c_start : boolean;
+	signal i2c_address : unsigned(6 downto 0);
+	signal i2c_register : unsigned(7 downto 0);
+	signal i2c_data : unsigned(7 downto 0);
+		
+	signal uart_idle : boolean;    
+	signal uart_start : boolean;
+	signal uart_byte : unsigned(7 downto 0);
 	
 begin		
 	pixelclockgenerator: PLL_119_5	port map (RST, CLK50, clkpixel);
@@ -326,189 +350,421 @@ begin
 	end process;
 	
 	
-	-- send initialization data to HDMI driver via a I2C interface
+
+	
+	-- Control program to initialize the HDMI transmitter and
+	-- to retrieve monitor configuration data to select 
+	-- correct screen resolution. 
+	-- The process implements a serial program with subroutine calls
+	-- using a big state machine.
 	process (CLK50)
-	  constant initdelay:integer := 10000;
-	  -- data to be sent to the I2C slave
-	  constant num:integer := 23;	  
-	  type T_TRIPPLET is array (0 to 2) of integer range 0 to 255;
-     type T_DATA is array(0 to num-1) of T_TRIPPLET;
-     constant DATA : T_DATA := (
+		-- configuration data
+		type T_CONFIGPAIR is array(0 to 1) of integer range 0 to 255;
+		type T_CONFIGDATA is array(natural range <>) of T_CONFIGPAIR;
+		constant CONFIGDATA : T_CONFIGDATA := (
                     -- power registers
-				(16#72#, 16#41#, 16#00#), -- power down inactive
-				(16#72#, 16#D6#, 2#11000000#), -- HPD is always high
+				(16#41#, 16#00#), -- power down inactive
+				(16#D6#, 2#11000000#), -- HPD is always high
 				
                     -- fixed registers
-				(16#72#, 16#98#, 16#03#), 
-				(16#72#, 16#9A#, 16#e0#), 
-				(16#72#, 16#9C#, 16#30#),
-				(16#72#, 16#9D#, 16#01#),
-				(16#72#, 16#A2#, 16#A4#),
-				(16#72#, 16#A3#, 16#A4#),
-				(16#72#, 16#E0#, 16#D0#),
-				(16#72#, 16#F9#, 16#00#),
+				(16#98#, 16#03#), 
+				(16#9A#, 16#e0#), 
+				(16#9C#, 16#30#),
+				(16#9D#, 16#01#),
+				(16#A2#, 16#A4#),
+				(16#A3#, 16#A4#),
+				(16#E0#, 16#D0#),
+				(16#F9#, 16#00#),
 				
 				                 -- force to DVI mode
-				(16#72#, 16#AF#, 16#00#),  
+				(16#AF#, 16#00#),  
 
   				                 -- video input and output format
-				(16#72#, 16#15#, 16#00#),        -- inputID = 1 (standard)
+				(16#15#, 16#00#),        -- inputID = 1 (standard)
 				                 -- 0x16[7]   = 0b0  .. Output format = 4x4x4
 								     -- 0x16[5:4] = 0b11 .. color depth = 8 bit
 									  -- 0x16[3:2] = 0x00 .. input style undefined
 									  -- 0x16[1]   = 0b0  .. DDR input edge
 									  -- 0x16[0]   = 0b0  .. output color space = RGB
-				(16#72#, 16#16#, 16#30#),		
+				(16#16#, 16#30#),		
 				
 				                 -- various unused options - force to default
-				(16#72#, 16#17#, 16#00#), 		
-				(16#72#, 16#18#, 16#00#),  -- output color space converter disable 		
-				(16#72#, 16#48#, 16#00#),
-				(16#72#, 16#BA#, 16#60#),
-				(16#72#, 16#D0#, 16#30#),
-				(16#72#, 16#40#, 16#00#),
-				(16#72#, 16#41#, 16#00#),
-				(16#72#, 16#D5#, 16#00#),
-				(16#72#, 16#FB#, 16#00#),
-				(16#72#, 16#3B#, 16#00#)
+				(16#17#, 16#00#), 		
+				(16#18#, 16#00#),  -- output color space converter disable 		
+				(16#48#, 16#00#),
+				(16#BA#, 16#60#),
+				(16#D0#, 16#30#),
+				(16#40#, 16#00#),
+				(16#41#, 16#00#),
+				(16#D5#, 16#00#),
+				(16#FB#, 16#00#),
+				(16#3B#, 16#00#)
 	  );
-	  -- divide down main clock to get slower state machine clock
-	  constant clockdivider:integer := 1000;  	  
-	  variable clockcounter: integer range 0 to clockdivider-1 := 0;
-
-	  -- states of the machine
-	  subtype t_state is integer range 0 to 11;
-	  constant state_delay  : integer := 0;
-	  constant state_idle   : integer := 1;
-	  constant state_start0 : integer := 2;
-	  constant state_start1 : integer := 3;
-	  constant state_send0  : integer := 4;
-	  constant state_send1  : integer := 5;
-	  constant state_send2  : integer := 6;
-	  constant state_ack0   : integer := 7;
-	  constant state_ack1   : integer := 8;
-	  constant state_ack2   : integer := 9;
-	  constant state_stop0  : integer := 10;
-	  constant state_stop1  : integer := 11;
-	  variable state : t_state := state_delay;
-
-	  variable delaycounter:integer range 0 to initdelay-1 := 0;
-	  variable currentline: integer range 0 to num-1 := 0;
-	  variable currentbyte: integer range 0 to 2 := 0; 
-	  variable currentbit:  integer range 0 to 7 := 0;
-	  
-	  -- registers for the output signals
-	  variable out_scl : std_logic := '1';
-	  variable out_sda : std_logic := '1';
-
-	  -- temporary
-	  variable tmp8 : unsigned(7 downto 0);
-	  variable tmptripplet : T_TRIPPLET;
-	  
-	  begin
-		if rising_edge(CLK50) then
+	
+	
+		-- implement the program counter with states
+		type t_pc is (
+			main0,main1,main2,main3,main10,main11,main12,main13,main14,main99,
+			i2c0,i2c1,i2c2,i2c3,i2c3a,i2c4,i2c5,i2c6,i2c7,i2c8,i2c9,
+			i2c10,i2c11,i2c12,i2c13,i2c14,i2c16,i2c17,i2c18,i2c19,
+			i2c20,i2c21,i2c99,i2c100,i2c101,
+			i2cpulse0,i2cpulse1,i2cpulse2,
+			uart0,uart1,uart2,
+			delay0,delay1,
+			millis0,millis1
+		);
+		variable pc : t_pc := main0;
+	  	
+		variable main_i:integer range 0 to 255;
+	
+		-- subroutine: uart	
+		variable uart_retadr:t_pc;   
+		variable uart_data:unsigned(7 downto 0);         -- data to send
+		variable uart_i:integer range 0 to 11;        
 		
-			-- process reset
-			if RST='1' then
-            state := state_delay;
-				delaycounter := 0;
-			
-         -- divide input clock to get slower state machine clock
- 		   elsif clockcounter+1<clockdivider then
-		      clockcounter := clockcounter+1;
+		-- subroutine: i2cwrite
+		variable i2c_retadr : t_pc;
+		variable i2c_address : unsigned(6 downto 0);
+		variable i2c_register : unsigned(7 downto 0);
+		variable i2c_data : unsigned(7 downto 0);
+		variable i2c_rw : std_logic;  -- '0'=w
+		variable i2c_error : unsigned(7 downto 0);
+		variable i2c_i : integer range 0 to 7;
 
-			else
-			   clockcounter := 0;
-				
-				case state is
-				when state_delay =>
-					if delaycounter < initdelay-1 then
-					   delaycounter := delaycounter+1;
-				   else 
-					   state := state_start0;
-						currentline := 0;
+		-- subroute i2cpulse
+		variable i2cpulse_retadr : t_pc;
+		variable i2cpulse_sda : std_logic;
+		
+		-- subroutine: delay
+		variable delay_retadr:t_pc;
+		variable delay_micros:integer range 0 to 1000;  -- microseconds to delay
+		variable delay_i:integer range 0 to 1000*50;
+
+		-- subroutine: millis
+		variable millis_retadr:t_pc;
+		variable millis_millis:integer range 0 to 1000;  -- microseconds to delay
+		variable millis_i:integer range 0 to 1000*50;
+		
+		-- output signal buffers 
+		variable out_tx : std_logic := '1';
+		variable out_scl : std_logic := '1';
+		variable out_sda : std_logic := '1';
+		
+	begin
+
+		-- synchronious program execution
+		if rising_edge(CLK50) then
+			case pc is
+			
+			-- main routine
+			when main0 =>
+				main_i := 0;
+				pc := millis0;
+				millis_millis := 200;  -- wait 200 millis before start
+				millis_retadr := main1;
+			when main1 =>
+				pc := i2c0;
+				i2c_address := to_unsigned(16#39#,7);
+				i2c_register := to_unsigned(CONFIGDATA(main_i)(0),8);
+				i2c_data := to_unsigned(CONFIGDATA(main_i)(1),8);
+				i2c_rw := '0';			
+				i2c_retadr := main2;	
+			when main2 =>
+				if i2c_error/="00000000" then
+					pc := uart0;
+					uart_data := i2c_error; 
+					uart_retadr := main99;
+				else
+					pc := main3;
+				end if;
+			when main3 =>
+				if main_i<CONFIGDATA'LENGTH-1 then
+					main_i := main_i + 1;
+					pc := main1;
+				else
+					main_i := 0;
+					pc := main10;
+				end if;
+			when main10 =>
+				pc := i2c0;
+				i2c_address := to_unsigned(16#39#,7);
+				i2c_register := to_unsigned(main_i,8);
+				i2c_rw := '1';			
+				i2c_retadr := main11;
+			when main11 =>
+				if i2c_error/="00000000" then
+					pc := uart0;
+					uart_data := i2c_error; 
+					uart_retadr := main99;
+				else				
+					pc := uart0;
+					uart_data := to_unsigned(hexdigit(to_integer(i2c_data(7 downto 4))),8);
+					uart_retadr := main12;
+				end if;
+			when main12 =>
+				pc := uart0;
+				uart_data := to_unsigned(hexdigit(to_integer(i2c_data(3 downto 0))),8);
+				uart_retadr := main13;
+			when main13 =>
+				pc := uart0;
+				if (main_i mod 16) = 15 then 
+					uart_data := to_unsigned(10,8);
+				else
+					uart_data := to_unsigned(32,8);
+				end if;
+				uart_retadr := main14;			
+			when main14 =>
+				if main_i < 255 then
+					main_i := main_i + 1;
+					pc := main10;
+				else
+					pc := uart0;
+					uart_data := to_unsigned(10,8);
+					uart_retadr := main99;			
+				end if;
+			
+			when main99 =>
+				pc := millis0;
+				millis_millis := 1000;
+				millis_retadr := main0;
+					
+			-- uart transmit
+			when uart0 =>
+				out_tx := '0'; -- start bit
+				uart_i := 0;
+				pc := delay0;
+				delay_micros := 104;  -- delay setting for for 9600 baud
+				delay_retadr := uart1;
+			when uart1 =>
+				out_tx := uart_data(uart_i);  -- data bits
+				pc := delay0;
+				if uart_i<7 then 
+					uart_i := uart_i+1;
+					delay_retadr := uart1;
+				else 
+					delay_retadr := uart2;
+				end if;	
+			when uart2 =>
+				out_tx := '1'; -- stop bit and idle level
+				pc := delay0;
+				delay_retadr := uart_retadr;				
+			
+			-- i2c transfer
+			when i2c0 =>
+				delay_micros := 100;   -- configure i2c step speed
+				i2c_error := to_unsigned(0,8);
+				out_sda := '0';    	-- start condition 1  
+				out_scl := '1';
+				pc := delay0;
+				delay_retadr := i2c1;
+			when i2c1 =>
+				out_sda := '0';       -- start condition 2
+				out_scl := '0';
+				pc := delay0;
+				delay_retadr := i2c2;
+				i2c_i := 6;
+			when i2c2 =>
+				out_sda := i2c_address(i2c_i);   -- sending address
+				pc := i2cpulse0;
+				if i2c_i>0 then
+					i2c_i := i2c_i -1;
+					i2cpulse_retadr := i2c2;
+				else
+					i2cpulse_retadr := i2c3;
+				end if;
+			when i2c3 =>                         
+				out_sda := '0';               -- write mode 
+				pc := i2cpulse0;
+				i2cpulse_retadr := i2c3a;
+			when i2c3a =>                         
+				out_sda := '1';              -- let slave send ack
+				pc := i2cpulse0;
+				i2cpulse_retadr := i2c4;
+			when i2c4 =>   
+				if i2cpulse_sda='0' then    -- ack received
+					i2c_i := 7;
+					pc := i2c5;
+				else
+					i2c_error := to_unsigned(69,8);  -- 'E'
+					pc := i2c99;
+				end if;
+			when i2c5 =>
+				out_sda := i2c_register(i2c_i);   -- sending register number
+				pc := i2cpulse0;
+				if i2c_i>0 then
+					i2c_i := i2c_i -1;
+					i2cpulse_retadr := i2c5;
+				else
+					i2cpulse_retadr := i2c6;
+				end if;
+			when i2c6 =>
+				out_sda := '1';                  -- let slave send ack
+				pc := i2cpulse0;
+				i2cpulse_retadr := i2c7;
+			when i2c7 =>
+				if i2cpulse_sda='0' then         -- received ack
+					i2c_i := 7;
+					if i2c_rw='0' then     
+						pc := i2c8;   -- set register
+					else
+						pc := i2c11;  -- read register
 					end if;
-				when state_start0 =>
-				   state := state_start1;
-					currentbyte := 0;
-					currentbit := 7;
-				when state_start1 =>
-				   state := state_send0;
-				when state_send0 =>
-				   state := state_send1;
-				when state_send1 =>
-				   if adv7513_scl/='0' then  -- continue when not stretching the clock
-					   state := state_send2;
-				   end if;
-			   when state_send2 =>
-				   if currentbit > 0 then
-					   currentbit := currentbit -1;
-						state := state_send0;
-				   else 
-					   state := state_ack0;
-				   end if;
-				when state_ack0 =>
-			      state := state_ack1;
-				when state_ack1 =>
-				   if adv7513_scl/='0' then  -- continue when not stretching the clock
-  	         state := state_ack2;
-			   	end if;
-				when state_ack2 =>
-				   if currentbyte < 2 then
-					   currentbyte := currentbyte + 1;
-						currentbit := 7;
-						state := state_send0;
-					else 
-					   state := state_stop0;
-				   end if;
-				when state_stop0 =>
-				   state := state_stop1;
-				when state_stop1 =>
-				   if adv7513_scl/='0' then -- continue when not stretching the clock
-					   state := state_idle;
-				   end if;
-    		   when state_idle =>
-	            if currentline < num-1 then
-					   currentline := currentline+1;
-		            state := state_start0;
-					end if;		
-	       	end case;
-	      end if;  -- clock divider
-
-			-- compute output registers 
-			if state=state_start0 or state=state_start1 
-			or state=state_stop0 or state=state_stop1 then
-			   out_sda := '0';
-			elsif state=state_send0 or state=state_send1 or state=state_send2 then
-			   tmptripplet := DATA(currentline);
-				tmp8 := to_unsigned(tmptripplet(currentbyte),8);
-            out_sda := tmp8(currentbit);
- 			else 
-			   out_sda := '1';
-         end if;
-			if state=state_delay or state=state_idle or state=state_start0
-			or state=state_send1 or state=state_ack1 or state=state_stop1 then
-			  out_scl := '1';
-			else 
-			  out_scl := '0';
-			end if;
+				else
+					i2c_error :=  to_unsigned(70,8);  -- 'F'
+					pc := i2c99;
+				end if;
+			when i2c8 =>
+				out_sda := i2c_data(i2c_i);     -- sending data
+				pc := i2cpulse0;
+				if i2c_i>0 then
+					i2c_i := i2c_i -1;
+					i2cpulse_retadr := i2c8;
+				else
+					i2cpulse_retadr := i2c9;
+				end if;
+			when i2c9 => 
+				out_sda := '1';                  -- let slave send ack
+				pc := i2cpulse0;
+				i2cpulse_retadr := i2c10;
+			when i2c10 =>
+				if i2cpulse_sda='0' then         -- received ack
+					pc := i2c99;
+				else
+					i2c_error :=  to_unsigned(71,8);  -- 'G'
+					pc := i2c99;
+				end if;
+				
+			when i2c11 =>	                 
+				out_sda := '1';                  -- restart condition 1
+				out_scl := '0';                  
+				pc := delay0;
+				delay_retadr := i2c12;
+			when i2c12 =>	                 
+				out_sda := '1';                  -- restart condtion 2
+				out_scl := '1';                 
+				pc := delay0;
+				delay_retadr := i2c13;
+			when i2c13 =>	                 
+				out_sda := '0';                  -- restart condition 3
+				out_scl := '1';                 
+				pc := delay0;
+				delay_retadr := i2c14;
+			when i2c14 =>	                 
+				out_sda := '0';                  -- restart condition 4
+				out_scl := '0';                 
+				pc := delay0;
+				delay_retadr := i2c16;
+				i2c_i := 6;
+			when i2c16 =>
+				out_sda := i2c_address(i2c_i);   -- sending address
+				pc := i2cpulse0;
+				if i2c_i>0 then
+					i2c_i := i2c_i -1;
+					i2cpulse_retadr := i2c16;
+				else
+					i2cpulse_retadr := i2c17;
+				end if;
+			when i2c17 =>                         
+				out_sda := '1';               -- read mode 
+				pc := i2cpulse0;
+				i2cpulse_retadr := i2c18;
+			when i2c18 =>                         
+				out_sda := '1';              -- let slave send ack
+				pc := i2cpulse0;
+				i2cpulse_retadr := i2c19;
+			when i2c19 =>   
+				if i2cpulse_sda='0' then     -- ack received
+					i2c_i := 7;
+					pc := i2c20;
+				else
+					i2c_error := to_unsigned(82,8);  -- 'R'
+					pc := i2c99;
+				end if;
+			when i2c20 =>
+				out_sda := '1';              -- let slave send data
+				pc := i2cpulse0;
+				i2cpulse_retadr := i2c21;
+			when i2c21 =>
+				i2c_data(i2c_i) := i2cpulse_sda;    -- reive data
+				if i2c_i>0 then
+					i2c_i := i2c_i-1;
+					pc := i2c20;
+				else
+					out_sda := '1';                -- send final nack 
+					pc := i2cpulse0;
+					i2cpulse_retadr := i2c99;
+				end if;
+								
+			when i2c99 =>
+				out_sda := '0';                  -- end condition 1
+				out_scl := '0';
+				pc := delay0;
+				delay_retadr := i2c100;
+			when i2c100 =>
+				out_sda := '0';                  -- end condition 2
+				out_scl := '1';
+				pc := delay0;
+				delay_retadr := i2c101;
+			when i2c101 =>
+				out_sda := '1';                  -- end condition 3
+				out_scl := '1';
+				pc := delay0;
+				delay_retadr := i2c_retadr;
+				
+			-- perform a single i2c clock
+			when i2cpulse0 =>
+				out_scl := '0';
+				pc := delay0;
+				delay_retadr := i2cpulse1;				
+			when i2cpulse1 =>
+				out_scl := '1';
+				pc := delay0;
+				delay_retadr := i2cpulse2;
+			when i2cpulse2 =>
+				if adv7513_scl='1' then  -- proceed if slave does not stretch the clock
+					i2cpulse_sda := adv7513_sda;  -- sample data at correct time
+					out_scl := '0';
+					pc := delay0;
+					delay_retadr := i2cpulse_retadr;
+				else 
+					pc := delay0;					
+					delay_retadr := i2cpulse2;
+				end if;
 			
-		end if;   -- clock	
+			-- delay
+			when delay0 =>
+				delay_i := delay_micros * 50;
+				pc := delay1;
+			when delay1 =>
+				if delay_i>0 then
+					delay_i := delay_i -1;
+				else
+					pc := delay_retadr;
+				end if;
+				
+			-- millis
+			when millis0 =>
+				millis_i := millis_millis;
+				pc := millis1;
+			when millis1 =>
+				pc := delay0;
+				delay_micros := 1000;
+				if millis_i>0 then
+					millis_i := millis_i-1;
+					delay_retadr := millis1;
+				else
+					delay_retadr := millis_retadr;
+				end if;
+				
+			end case;
+		end if;
 
-	   -- set output signals according to registers
-		if out_scl='0' then
-		   adv7513_scl <= '0';
-		else 
-		   adv7513_scl <= 'Z';
-	   end if;
-		if out_sda='0' then
-		   adv7513_sda <= '0';
-		else 
-		   adv7513_sda <= 'Z';
-	   end if;	
+	   -- async logic: set output signals according to registers
+		DEBUG <= out_tx;
+		if out_scl='0' then adv7513_scl <= '0'; else adv7513_scl <= 'Z'; end if; 
+		if out_sda='0' then adv7513_sda <= '0'; else adv7513_sda <= 'Z'; end if; 
+			
 	end process;
-
-
 	
 end immediate;
 

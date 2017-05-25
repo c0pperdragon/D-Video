@@ -12,7 +12,6 @@ entity Atari800Mod is
 	
 		-- on-board user IO
 		LED:  out STD_LOGIC_VECTOR (1 downto 0);
-		BUTTON: in STD_LOGIC;
 		
 	   -- HDMI interface
 		adv7511_scl: inout std_logic; 
@@ -51,7 +50,10 @@ architecture immediate of Atari800Mod is
 		DVID_CLK    : in std_logic;
 		DVID_HSYNC   : in std_logic;
 		DVID_VSYNC   : in std_logic;
-		DVID_RGB    : in STD_LOGIC_VECTOR(11 downto 0)	
+		DVID_RGB    : in STD_LOGIC_VECTOR(11 downto 0);
+		
+		-- debugging output ---
+		DEBUG : out std_logic
 	);	
 	end component;
 	
@@ -81,10 +83,11 @@ architecture immediate of Atari800Mod is
 begin		
 		
    part1 : DVideo2HDMI port map (
-		CLK50, not BUTTON, 
+		CLK50, '0', 
 		adv7511_scl, adv7511_sda, adv7511_hs, adv7511_vs, adv7511_clk,
 		adv7511_d, adv7511_de,
-		DVID_CLK, DVID_HSYNC, DVID_VSYNC, DVID_RGB );
+		DVID_CLK, DVID_HSYNC, DVID_VSYNC, DVID_RGB,
+		LED(0)	);
 
    part2 : GTIA2DVideo port map (
 		NOT INPUTS(3),                                                                                                    -- CLK
@@ -115,8 +118,7 @@ begin
 			end if;
 		end if;
 		
-		LED(0) <= x;
-		LED(1) <= not x;
+		LED(1) <= x;
 		
 		adv7511_spdif <= '0';
 	end process;

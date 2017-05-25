@@ -119,7 +119,6 @@ set_location_assignment PIN_29 -to INPUTS[28]
 set_location_assignment PIN_28 -to INPUTS[29]
 set_location_assignment PIN_27 -to INPUTS[30]
 set_location_assignment PIN_24 -to INPUTS[31]
-set_location_assignment PIN_118 -to BUTTON
 set_location_assignment PIN_74 -to adv7511_spdif
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
@@ -155,7 +154,6 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_de
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_scl
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_sda
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7511_vs
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to BUTTON
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to CLK50
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to LED[1]
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to LED[0]
