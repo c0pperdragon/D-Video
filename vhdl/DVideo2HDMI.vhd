@@ -1,10 +1,33 @@
+-- running on D-Video board 
+
 library ieee;
 use ieee.numeric_std.all;
 use ieee.std_logic_1164.all;
 
--- running on D-Video board 
+package DVideo2HDMI_pkg is
+	-- for each mode:  
+	--    h_sync h_bp h_addr h_fp h_imagestart
+   --    v_sync v_bp v_addr v_fp v_imagestart	
+	type videotiming is array(0 to 9) of integer;
+	type videotimings is array(natural range <>) of videotiming;
+	
+		
+	-- for each mode a stream of 144 configuration bits of the PLL
+   type pllconfigurations is array(natural range <>) of unsigned(143 downto 0);
+end package;
+
+
+
+library ieee;
+use ieee.numeric_std.all;
+use ieee.std_logic_1164.all;
+use work.DVideo2HDMI_pkg.all;
 
 entity DVideo2HDMI is	
+	generic ( 
+		 timings:videotimings;
+		 configurations:pllconfigurations
+	);
 	port (
 	   -- default clocking and reset
 		CLK50: in std_logic;	
@@ -21,6 +44,7 @@ entity DVideo2HDMI is
 	
 		-- DVideo input -----
 		DVID_CLK    : in std_logic;
+		DVID_REFCLK : in std_logic;
 		DVID_HSYNC  : in std_logic;
 		DVID_VSYNC  : in std_logic;
 		DVID_RGB    : in STD_LOGIC_VECTOR(11 downto 0);
@@ -33,18 +57,25 @@ end entity;
 
 architecture immediate of DVideo2HDMI is
 
-   component PLL_119_5 is
+   component PLL is
 	PORT
 	(
 		areset		: IN STD_LOGIC  := '0';
+		configupdate		: IN STD_LOGIC  := '0';
 		inclk0		: IN STD_LOGIC  := '0';
-		c0		: OUT STD_LOGIC 
+		scanclk		: IN STD_LOGIC  := '1';
+		scanclkena		: IN STD_LOGIC  := '0';
+		scandata		: IN STD_LOGIC  := '0';
+		c0		: OUT STD_LOGIC ;
+		locked		: OUT STD_LOGIC ;
+		scandataout		: OUT STD_LOGIC ;
+		scandone		: OUT STD_LOGIC 
 	);
-   end component;
+	end component;
 
 
 	component VideoRAM is
-   PORT
+	PORT
 	(
 		data		: IN STD_LOGIC_VECTOR (11 DOWNTO 0);
 		rdaddress		: IN STD_LOGIC_VECTOR (14 DOWNTO 0);
@@ -65,6 +96,14 @@ architecture immediate of DVideo2HDMI is
 		end if;
 	end hexdigit;
 
+	
+	constant numres : integer := timings'length;
+	signal resolution : integer range 0 to numres-1;
+	
+	signal pll_areset         : std_logic;
+	signal pll_configupdate   : std_logic;
+	signal pll_scanclkena     : std_logic;
+	signal pll_scandata       : std_logic;
 	                    -- incomming data (already aligned with CLK50)	
 	signal in_available : std_logic;
 	signal in_rgb : std_logic_vector(11 downto 0);
@@ -80,27 +119,81 @@ architecture immediate of DVideo2HDMI is
 	signal ram_wren : STD_LOGIC;
 	signal ram_q : STD_LOGIC_VECTOR (11 DOWNTO 0);
 	
-	-- communication between processes
-	signal i2c_idle : boolean;
-	signal i2c_start : boolean;
-	signal i2c_address : unsigned(6 downto 0);
-	signal i2c_register : unsigned(7 downto 0);
-	signal i2c_data : unsigned(7 downto 0);
-		
-	signal uart_idle : boolean;    
-	signal uart_start : boolean;
-	signal uart_byte : unsigned(7 downto 0);
 	
 begin		
-	pixelclockgenerator: PLL_119_5	port map (RST, CLK50, clkpixel);
-   videoram1 : VideoRAM port map(ram_data, 
-	                              ram_rdaddress, clkpixel, 
-	                              ram_wraddress, CLK50, ram_wren,
-											ram_q);
+	pixelclockgenerator: PLL port map (
+		pll_areset, 
+		pll_configupdate,
+		DVID_REFCLK, 
+		CLK50,
+		pll_scanclkena, 
+		pll_scandata,
+		clkpixel,
+		open,
+		open,
+		open
+		);
+   videoram1 : VideoRAM port map(
+		ram_data, 
+	   ram_rdaddress,
+		clkpixel, 
+	   ram_wraddress, 
+		CLK50, 
+		ram_wren,
+		ram_q);
+	
+	
+	-- Program to set up the pixel clock PLL according to the current screenmode.
+	process (CLK50)
+	
+	variable programmedres : integer range 0 to numres := numres;
+	variable b : integer range 0 to 1023 := 1000;  -- idle state
+
+	variable out_configupdate : std_logic := '0';
+	variable out_areset : std_logic := '0';
+	variable out_scanclkena : std_logic := '0';
+	variable out_scandata : std_logic := '0';
+	begin
+		if rising_edge(CLK50) then
+			out_configupdate := '0';
+			out_areset := '0';
+			out_scandata := '0';
+			out_scanclkena := '0';
+
+			if b<1023 then
+				b := b+1;
+			elsif resolution /= programmedres then
+				programmedres := resolution;
+				b := 0;
+			end if;
+
+			if b<=144 then
+				out_scanclkena := '1';
+			end if;
+			
+			if b>=1 and b<=144 then
+				out_scandata := std_logic(configurations(programmedres)(b-1)); 
+			end if;
+			
+			if b=150 then
+				out_configupdate := '1';
+			end if;
+			
+			if b=300 then
+				out_areset := '1';
+			end if;
+			
+		end if;
+		
+		pll_configupdate <= out_configupdate;
+		pll_areset <= out_areset;
+		pll_scanclkena <= out_scanclkena;
+		pll_scandata <= out_scandata;
+	end process;
+	
 	
   -- clock in the DVID data on every edge 
   -- delay signals to get a zero-hold time trigger on DVID_CLK 
-
   process (CLK50) 
   variable a0 : std_logic_vector(14 downto 0) := "000000000000000";
   variable b0 : std_logic_vector(14 downto 0) := "000000000000000";
@@ -153,190 +246,179 @@ begin
 			
   ------------------- process the pixel stream ------------------------
   process (CLK50)	    
-	
-	variable pixelvalue : unsigned(11 downto 0) := "000000000000";
+	-- visible range:  400x270 (PAL),  400x240 (NTSC)	
 	variable x : integer range 0 to 1023 := 0;
 	variable y : integer range 0 to 511 := 0;
-	variable visiblearea : std_logic := '0';
-	variable bufferaddress : integer range 0 to 24999;
 	
 	variable out_framestart : std_logic := '0';
+	variable out_ramdata : std_logic_vector(11 downto 0) := (others => '0');
+	variable out_ramwren : std_logic := '0';
+	variable out_ramwraddress : std_logic_vector(14 downto 0) := (others => '0');
 	
 	begin	
 		if rising_edge(CLK50) then
-		
-		  if RST='1' then
-				pixelvalue := (others => '0');
-			   x := 0;
-			   y := 0;
-				
-		  -- process whenever there is new incomming data  
-		  elsif in_available='1' then
-		  	
-			-- compute where to store the incomming pixel data
-			visiblearea := '0';
-			bufferaddress := 0;
-			if x<400 and y<270 and in_vsync='0' and in_hsync='0' then
-				visiblearea := '1';
-				bufferaddress := (x + y*400) mod 25000;
-			end if;
-
-			-- sync signals reset the counter
-			if in_vsync='1' then 
-				y:= 0;
-				x:= 0;
-	         pixelvalue := (others => '0');
-				
-			elsif in_hsync='1' then
-				if x>0 then 
-					y := y+1;
-				end if;
-				x:=0;
-	         pixelvalue := (others => '0');				
-
-			-- progress the horizontal counter
-			else 			
-				if x<1023 then
-				   x := x+1;
-				end if;
-            pixelvalue := unsigned(in_rgb);
+			out_ramwren := '0';
+			
+			-- process whenever there is new incomming data  
+			if in_available='1' then
+									 
+				-- sync signals reset the counter
+				if in_vsync='1' then 
+					y:= 0;
+					x:= 0;
 					
-			end if;
-
+				elsif in_hsync='1' then
+					if x>0 then 
+						y := y+1;
+					end if;
+					x:=0;
+	
+				-- receive pixel, and if visible, store it
+				else 
+					if x<384 and y<270 then
+						out_ramdata := std_logic_vector(in_rgb);
+						out_ramwren := '1';
+						out_ramwraddress := std_logic_vector(to_unsigned(
+							((x+y*384) mod 16384), -- 24576),
+							15));
+						
+						x := x+1;
+					end if;
+				end if;
+			end if;	
+	
 		   -- detect frame start and notify the HDMI signal generator
-		   if y=10 then
-   		  out_framestart := '1';
-		   else
-		     out_framestart := '0';
-		   end if;
-			
-			
-		 end if;  -- RST, processing data				 
+			out_framestart := '0';
+			if y=0 and x=1 then 
+				out_framestart := '1';
+			end if;
 		end if;   
 		
-	
+		-- put registers on output lines
 		framestart <= out_framestart;
-		
-		ram_data <= std_logic_vector(pixelvalue);	
-		ram_wren <= visiblearea;
-		ram_wraddress <= std_logic_vector(to_unsigned(bufferaddress,15));
+		ram_data <= out_ramdata;	
+		ram_wren <= out_ramwren; 
+		ram_wraddress <= out_ramwraddress;
 	end process;	
 	
 	
 	------------------- create the output hdmi video signals ----------------------
-	process (clkpixel) 
-	 -- timings for XSGA
-	constant h_sync : integer := 176;
-	constant h_bp : integer := 264;
-	constant h_fp : integer := 88 + 32;   
-	constant h_total : integer := h_sync + h_bp + 1680 + h_fp;
-	constant v_sync : integer := 6;
-	constant v_bp : integer := 24;
-	constant v_fp : integer := 3;
-	constant v_total : integer := v_sync + v_bp + 1050 + v_fp;
-	
-	variable x : integer range 0 to h_total := 0; 
-	variable y : integer range 0 to v_total := 0;
-	variable insidevisible : std_logic;
+	process (clkpixel) 	
+	variable x : integer range 0 to 4095 := 0; 
+	variable y : integer range 0 to 2047 := 0;
+		
+	variable in_framestart : std_logic := '0';
 	
    variable out_hs : std_logic := '0';
 	variable out_vs : std_logic := '0';
-	variable out_rgb : std_logic_vector (23 downto 0) := "000000000000000000000000";
+	variable out_rgb : std_logic_vector (11 downto 0) := (others => '0');
 	variable out_de : std_logic := '0';
-	
-	variable speedup : integer range 0 to 63 := 32;
-	variable in_framestart : std_logic := '0';
-	variable prev_framestart : std_logic := '0';
 
-	variable tmp_x : integer range 0 to h_total-1;
-	variable tmp_y : integer range 0 to v_total-1;
-	variable tmp_y_us : unsigned(7 downto 0);
-	variable tmp_data : unsigned(7 downto 0);
-	variable pixelx : integer range 0 to 511;
-	variable pixely : integer range 0 to 511;
-	variable bufferaddress0 : integer range 0 to 24999;
-	variable bufferaddress1 : integer range 0 to 24999;
+	variable pixelphase : integer range 0 to 3;	
+	variable pixeladdress : integer range 0 to 16384-1;	
+	variable linephase : integer range 0 to 8;
+	variable lineaddress : integer range 0 to 16384-1;
+	variable insidepixelbuffer : std_logic;
+	variable insidepixelbuffer2 : std_logic;
+	variable insidepixelbuffer3 : std_logic;
+
+	variable h_sync : integer;
+	variable h_bp : integer;
+	variable h_addr : integer;
+	variable h_fp : integer;   
+	variable h_imagestart : integer;
+	variable v_sync : integer;
+	variable v_bp : integer;
+	variable v_addr : integer;
+	variable v_fp : integer;
+	variable v_imagestart : integer;
+
 	
 	begin
+	
 		if rising_edge(clkpixel) then		
+			h_sync := timings(resolution)(0);
+			h_bp := timings(resolution)(1);
+			h_addr := timings(resolution)(2);
+			h_fp := timings(resolution)(3);
+			h_imagestart := timings(resolution)(4);
+			v_sync := timings(resolution)(5);
+			v_bp := timings(resolution)(6);
+			v_addr := timings(resolution)(7);
+			v_fp := timings(resolution)(8);
+			v_imagestart := timings(resolution)(9);
 		
-         -- write output signals to registers 
+			-- write output signals to registers 
 			if y<v_sync then
 				out_vs := '1';
 			else 
 			   out_vs := '0';
 			end if;
 			if x<h_sync then
-				out_hs := '0';
+				out_hs := '1';
 			else 
-			   out_hs := '1';
+			   out_hs := '0';
 			end if;
-			if x>=h_sync+h_bp and x<h_total-h_fp and y>=v_sync+v_bp and y<v_total-v_fp then
+			if  x>=h_sync+h_bp and x<h_sync+h_bp+h_addr
+			and y>=v_sync+v_bp and y<v_sync+v_bp+v_addr then
 				out_de := '1';
+				if insidepixelbuffer3='1' then
+					out_rgb := ram_q;				
+				else
+					out_rgb := (others=>'0');
+				end if;
 			else
 				out_de := '0';
+				out_rgb := (others=>'0');
 			end if;
-   	
-			-- determine the color according to the sample info
-			if insidevisible='1' then
-				out_rgb :=    ram_q(11 downto 8) 
-					         & ram_q(11 downto 8)
-								& ram_q(7 downto 4)
-								& ram_q(7 downto 4)
-								& ram_q(3 downto 0)
-								& ram_q(3 downto 0);
+   				
+--			-- pipelining info
+			insidepixelbuffer3 := insidepixelbuffer2;
+			insidepixelbuffer2 := insidepixelbuffer;
+			insidepixelbuffer := '0';
+			if x>=h_imagestart and x<h_imagestart+384*4 then
+				insidepixelbuffer := '1';
+			end if;
+			
+			-- counters for low-res pixels
+			if x=h_imagestart then
+				pixeladdress := lineaddress;
+				pixelphase := 0;
+			elsif pixelphase<3 then
+				pixelphase := pixelphase+1;
 			else
-			   out_rgb := (others=>'0');
+				pixelphase := 0;
+				pixeladdress := (pixeladdress+1) mod 16384;
+			end if;
+			if x=0 then
+				if y=v_imagestart then
+					lineaddress := 0;
+					linephase := 0;
+				elsif linephase<3 then
+					linephase := linephase+1;
+				else
+					linephase := 0;
+					lineaddress := (lineaddress + 384) mod 16384;
+				end if;
 			end if;
 			
-
-			-- detect start of input frame and adjust speed to sync with it
-			if in_framestart='1' and prev_framestart='0' then
-				if y>=v_sync+v_bp+31 then 
-				   speedup := 0;	
-            elsif y<=v_sync+v_bp-31 then
-				   speedup := 63;
-				elsif y < v_sync+v_bp then
-				   speedup := 32 + (v_sync+v_bp - y);
-				else 
-				   speedup := 32 - (y - (v_sync+v_bp));
-				end if;
-			end if;			
-			prev_framestart := in_framestart;
-			in_framestart := framestart;
-			
-
-			-- request video data for next pixel (pipeline computation)
-			bufferaddress1 := bufferaddress0;
-			bufferaddress0 := (pixelx+pixely*400) mod 25000;
-			
-			-- determine low-res pixel to display (and if any should be visible)
-			pixelx := (x-(h_sync+h_bp+40) + 4) / 4;
-			pixely := (y-(v_sync+v_bp-15)) / 4;
-			 if x>=(h_sync+h_bp+40) and x<(h_sync+h_bp+40+400*4) and
-			    y>=(v_sync+v_bp-15) and y<(v_sync+v_bp-15+270*4) 
-			 then 
-			   insidevisible := '1';
-			 else 
-			   insidevisible := '0';
-			 end if;
-			 
-
-			-- continue with next high-res pixel in next clock
-			if RST='1' then
-				x := 0;
-				y := 0;
-			 elsif x < (h_total-1) - speedup then
+			-- continue with next high-res pixel in next clock		
+			if y=v_imagestart-4 and x=1 and in_framestart='0' then
+					-- stop progression here until framestart signal 			
+			elsif x < h_sync+h_bp+h_addr+h_fp - 1 then
 				x := x+1;
-			 else 				
-				-- switch to next line
-			   x := 0;
-				if y >= v_total-1 then
-				   y := 0;
+			else 
+				if y  < v_sync+v_bp+v_addr+v_fp-1 then
+					x := 0;
+					y := y+1;
 				else
-				   y := y+1;
+					x := 0;
+					y := 0;						
 				end if;
-			 end if;			
+			end if;		
+			
+			in_framestart := framestart;			
+	
 		end if;
 	
 		
@@ -344,13 +426,17 @@ begin
       adv7513_hs <= out_hs; 
       adv7513_vs <= out_vs;
       adv7513_de <= out_de;
-		adv7513_d <= out_rgb;			
+		adv7513_d <= 	  out_rgb(11 downto 8) 
+							& out_rgb(11 downto 8)
+							& out_rgb(7 downto 4)
+							& out_rgb(7 downto 4)
+							& out_rgb(3 downto 0)
+							& out_rgb(3 downto 0);			
 
-		ram_rdaddress <= std_logic_vector(to_unsigned(bufferaddress1,15));
+		ram_rdaddress <= std_logic_vector(to_unsigned(pixeladdress,15));
 	end process;
-	
-	
 
+	
 	
 	-- Control program to initialize the HDMI transmitter and
 	-- to retrieve monitor configuration data to select 
@@ -380,13 +466,16 @@ begin
 				(16#AF#, 16#00#),  
 
   				                 -- video input and output format
-				(16#15#, 16#00#),        -- inputID = 1 (standard)
+				(16#15#, 16#00#),-- inputID = 1 (standard)
 				                 -- 0x16[7]   = 0b0  .. Output format = 4x4x4
 								     -- 0x16[5:4] = 0b11 .. color depth = 8 bit
 									  -- 0x16[3:2] = 0x00 .. input style undefined
 									  -- 0x16[1]   = 0b0  .. DDR input edge
 									  -- 0x16[0]   = 0b0  .. output color space = RGB
 				(16#16#, 16#30#),		
+				
+				                 -- edid address (slave address=3F)
+				(16#43#, 2#01111110#),
 				
 				                 -- various unused options - force to default
 				(16#17#, 16#00#), 		
@@ -404,7 +493,7 @@ begin
 	
 		-- implement the program counter with states
 		type t_pc is (
-			main0,main1,main2,main3,main10,main11,main12,main13,main14,main99,
+			main0,main1,main2,main3,main10,main11,main12,main13,main14,main15,main16,main17,main99,
 			i2c0,i2c1,i2c2,i2c3,i2c3a,i2c4,i2c5,i2c6,i2c7,i2c8,i2c9,
 			i2c10,i2c11,i2c12,i2c13,i2c14,i2c16,i2c17,i2c18,i2c19,
 			i2c20,i2c21,i2c99,i2c100,i2c101,
@@ -416,7 +505,9 @@ begin
 		variable pc : t_pc := main0;
 	  	
 		variable main_i:integer range 0 to 255;
-	
+		variable main_edid_hor:  unsigned(11 downto 0);
+		variable main_edid_vert: unsigned(11 downto 0);
+		
 		-- subroutine: uart	
 		variable uart_retadr:t_pc;   
 		variable uart_data:unsigned(7 downto 0);         -- data to send
@@ -449,6 +540,7 @@ begin
 		variable out_tx : std_logic := '1';
 		variable out_scl : std_logic := '1';
 		variable out_sda : std_logic := '1';
+		variable out_resolution : integer range 0 to numres-1;
 		
 	begin
 
@@ -462,6 +554,7 @@ begin
 				pc := millis0;
 				millis_millis := 200;  -- wait 200 millis before start
 				millis_retadr := main1;
+			-- program the hdmi transmitter registers
 			when main1 =>
 				pc := i2c0;
 				i2c_address := to_unsigned(16#39#,7);
@@ -485,9 +578,10 @@ begin
 					main_i := 0;
 					pc := main10;
 				end if;
+			-- read out EDID memory
 			when main10 =>
 				pc := i2c0;
-				i2c_address := to_unsigned(16#39#,7);
+				i2c_address := to_unsigned(16#3F#,7); -- to_unsigned(16#39#,7);
 				i2c_register := to_unsigned(main_i,8);
 				i2c_rw := '1';			
 				i2c_retadr := main11;
@@ -497,6 +591,16 @@ begin
 					uart_data := i2c_error; 
 					uart_retadr := main99;
 				else				
+					-- memorize native resolution info
+					if main_i=54+2 then
+						main_edid_hor(7 downto 0) := i2c_data;
+					elsif main_i=54+4 then
+						main_edid_hor(11 downto 8) := i2c_data(7 downto 4);
+					elsif main_i=54+5 then
+						main_edid_vert(7 downto 0) := i2c_data;
+					elsif main_i=54+7 then
+						main_edid_vert(11 downto 8) := i2c_data(7 downto 4);
+					end if;
 					pc := uart0;
 					uart_data := to_unsigned(hexdigit(to_integer(i2c_data(7 downto 4))),8);
 					uart_retadr := main12;
@@ -514,15 +618,42 @@ begin
 				end if;
 				uart_retadr := main14;			
 			when main14 =>
-				if main_i < 255 then
+				if main_i < 127 then
 					main_i := main_i + 1;
 					pc := main10;
 				else
 					pc := uart0;
 					uart_data := to_unsigned(10,8);
-					uart_retadr := main99;			
+					uart_retadr := main15;			
 				end if;
-			
+			when main15 =>
+				-- decide which resolution to use
+				out_resolution := 0;
+				for i in 1 to numres-1 loop
+					if  to_integer(main_edid_hor)>=timings(i)(2) 
+					and to_integer(main_edid_vert)>=timings(i)(7) then
+						out_resolution := i;
+					end if;
+				end loop;
+--		out_resolution := 2;
+				pc := main99;
+			when main16 =>  
+				-- toggle the re-read bit
+				pc := i2c0;
+				i2c_address := to_unsigned(16#39#,7);
+				i2c_register := to_unsigned(16#C9#,8);
+				i2c_data := to_unsigned(2#00000011#,8);
+				i2c_rw := '0';			
+				i2c_retadr := main17;
+			when main17 =>  -- toggle the re-read bit
+				pc := i2c0;
+				i2c_address := to_unsigned(16#39#,7);
+				i2c_register := to_unsigned(16#C9#,8);
+				i2c_data := to_unsigned(2#00010011#,8);
+				i2c_rw := '0';			
+				i2c_retadr := main99;
+				
+			-- wait a bit before polling again
 			when main99 =>
 				pc := millis0;
 				millis_millis := 1000;
@@ -551,7 +682,7 @@ begin
 			
 			-- i2c transfer
 			when i2c0 =>
-				delay_micros := 100;   -- configure i2c step speed
+				delay_micros := 3;   -- configure i2c step speed (ca. 100k bit/s)
 				i2c_error := to_unsigned(0,8);
 				out_sda := '0';    	-- start condition 1  
 				out_scl := '1';
@@ -763,6 +894,7 @@ begin
 		DEBUG <= out_tx;
 		if out_scl='0' then adv7513_scl <= '0'; else adv7513_scl <= 'Z'; end if; 
 		if out_sda='0' then adv7513_sda <= '0'; else adv7513_sda <= 'Z'; end if; 
+		resolution <= out_resolution;	
 			
 	end process;
 	
