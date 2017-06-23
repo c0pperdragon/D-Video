@@ -26,7 +26,8 @@ use work.DVideo2HDMI_pkg.all;
 entity DVideo2HDMI is	
 	generic ( 
 		 timings:videotimings;
-		 configurations:pllconfigurations
+		 configurations:pllconfigurations;
+		 vstretch:boolean
 	);
 	port (
 	   -- default clocking and reset
@@ -74,17 +75,20 @@ architecture immediate of DVideo2HDMI is
 	end component;
 
 
-	component VideoRAM is
-	PORT
-	(
-		data		: IN STD_LOGIC_VECTOR (11 DOWNTO 0);
-		rdaddress		: IN STD_LOGIC_VECTOR (14 DOWNTO 0);
+	component SyncRAM is
+    Generic (
+           ADDRESSWIDTH: natural := 8; 
+           DATAWIDTH: natural := 8
+    );
+    Port ( 
+		data		: IN STD_LOGIC_VECTOR (DATAWIDTH-1 DOWNTO 0);
+		rdaddress		: IN STD_LOGIC_VECTOR (ADDRESSWIDTH-1 DOWNTO 0);
 		rdclock		: IN STD_LOGIC ;
-		wraddress		: IN STD_LOGIC_VECTOR (14 DOWNTO 0);
+		wraddress		: IN STD_LOGIC_VECTOR (ADDRESSWIDTH-1 DOWNTO 0);
 		wrclock		: IN STD_LOGIC  := '1';
 		wren		: IN STD_LOGIC  := '0';
-		q		: OUT STD_LOGIC_VECTOR (11 DOWNTO 0)
-	);
+		q		: OUT STD_LOGIC_VECTOR (DATAWIDTH-1 DOWNTO 0)
+    );
 	end component;
 	
 	function hexdigit(i:integer) return integer is 
@@ -114,14 +118,15 @@ architecture immediate of DVideo2HDMI is
 	signal framestart : std_logic;       -- signals the first part of an incomming video frame  
 	
 	signal ram_data: STD_LOGIC_VECTOR (11 DOWNTO 0);
-	signal ram_rdaddress: STD_LOGIC_VECTOR (14 DOWNTO 0);
-	signal ram_wraddress : STD_LOGIC_VECTOR (14 DOWNTO 0);
+	signal ram_rdaddress: STD_LOGIC_VECTOR (13 DOWNTO 0);
+	signal ram_wraddress : STD_LOGIC_VECTOR (13 DOWNTO 0);
 	signal ram_wren : STD_LOGIC;
 	signal ram_q : STD_LOGIC_VECTOR (11 DOWNTO 0);
 	
 	
 begin		
-	pixelclockgenerator: PLL port map (
+	pixelclockgenerator: PLL 
+	port map (
 		pll_areset, 
 		pll_configupdate,
 		DVID_REFCLK, 
@@ -132,15 +137,17 @@ begin
 		open,
 		open,
 		open
-		);
-   videoram1 : VideoRAM port map(
+	);
+   videoram1 : SyncRAM generic map (14,12)
+	port map(
 		ram_data, 
 	   ram_rdaddress,
 		clkpixel, 
 	   ram_wraddress, 
 		CLK50, 
 		ram_wren,
-		ram_q);
+		ram_q
+	);
 	
 	
 	-- Program to set up the pixel clock PLL according to the current screenmode.
@@ -253,7 +260,7 @@ begin
 	variable out_framestart : std_logic := '0';
 	variable out_ramdata : std_logic_vector(11 downto 0) := (others => '0');
 	variable out_ramwren : std_logic := '0';
-	variable out_ramwraddress : std_logic_vector(14 downto 0) := (others => '0');
+	variable out_ramwraddress : std_logic_vector(13 downto 0) := (others => '0');
 	
 	begin	
 		if rising_edge(CLK50) then
@@ -261,6 +268,13 @@ begin
 			
 			-- process whenever there is new incomming data  
 			if in_available='1' then
+				
+				-- detect frame start and notify the HDMI signal generator
+				if x+y*384 = timings(resolution)(5) + 1 then 
+					out_framestart := '1';
+				else
+					out_framestart := '0';
+				end if;
 									 
 				-- sync signals reset the counter
 				if in_vsync='1' then 
@@ -280,18 +294,13 @@ begin
 						out_ramwren := '1';
 						out_ramwraddress := std_logic_vector(to_unsigned(
 							((x+y*384) mod 16384), -- 24576),
-							15));
+							14));
 						
 						x := x+1;
 					end if;
 				end if;
 			end if;	
 	
-		   -- detect frame start and notify the HDMI signal generator
-			out_framestart := '0';
-			if y=0 and x=1 then 
-				out_framestart := '1';
-			end if;
 		end if;   
 		
 		-- put registers on output lines
@@ -331,22 +340,24 @@ begin
 	variable v_bp : integer;
 	variable v_addr : integer;
 	variable v_fp : integer;
-	variable v_imagestart : integer;
-
+--	variable v_imagestart : integer;
+	variable firstlineaddress : integer;
 	
 	begin
 	
 		if rising_edge(clkpixel) then		
+			-- calculate the timings values according to the table
 			h_sync := timings(resolution)(0);
 			h_bp := timings(resolution)(1);
 			h_addr := timings(resolution)(2);
 			h_fp := timings(resolution)(3);
-			h_imagestart := timings(resolution)(4);
-			v_sync := timings(resolution)(5);
-			v_bp := timings(resolution)(6);
-			v_addr := timings(resolution)(7);
-			v_fp := timings(resolution)(8);
-			v_imagestart := timings(resolution)(9);
+			h_imagestart := h_sync + h_bp + timings(resolution)(4);
+			firstlineaddress := timings(resolution)(5);
+			v_sync := timings(resolution)(6);
+			v_bp := timings(resolution)(7);
+			v_addr := timings(resolution)(8);
+			v_fp := timings(resolution)(9);
+--			v_imagestart := v_sync + v_bp + timings(resolution)(10);
 		
 			-- write output signals to registers 
 			if y<v_sync then
@@ -391,19 +402,26 @@ begin
 				pixeladdress := (pixeladdress+1) mod 16384;
 			end if;
 			if x=0 then
-				if y=v_imagestart then
-					lineaddress := 0;
+				if y=v_sync+v_bp then
+					lineaddress := firstlineaddress mod 16384;
 					linephase := 0;
-				elsif linephase<3 then
-					linephase := linephase+1;
 				else
-					linephase := 0;
-					lineaddress := (lineaddress + 384) mod 16384;
+					if linephase<3 then
+						linephase := linephase+1;
+					elsif linephase<8 and vstretch then
+						if linephase=3 then
+							lineaddress := (lineaddress + 384) mod 16384;
+						end if;
+						linephase := linephase+1;							
+					else
+						linephase := 0;
+						lineaddress := (lineaddress + 384) mod 16384;
+					end if;
 				end if;
 			end if;
 			
 			-- continue with next high-res pixel in next clock		
-			if y=v_imagestart-4 and x=1 and in_framestart='0' then
+			if y=v_sync+v_bp-4 and x=0 and in_framestart='0' then
 					-- stop progression here until framestart signal 			
 			elsif x < h_sync+h_bp+h_addr+h_fp - 1 then
 				x := x+1;
@@ -433,7 +451,7 @@ begin
 							& out_rgb(3 downto 0)
 							& out_rgb(3 downto 0);			
 
-		ram_rdaddress <= std_logic_vector(to_unsigned(pixeladdress,15));
+		ram_rdaddress <= std_logic_vector(to_unsigned(pixeladdress,14));
 	end process;
 
 	
@@ -449,7 +467,8 @@ begin
 		type T_CONFIGDATA is array(natural range <>) of T_CONFIGPAIR;
 		constant CONFIGDATA : T_CONFIGDATA := (
                     -- power registers
-				(16#41#, 16#00#), -- power down inactive
+--				(16#41#, 2#01000000#), -- power down to reset everything
+				(16#41#, 2#00000000#), -- power down inactive
 				(16#D6#, 2#11000000#), -- HPD is always high
 				
                     -- fixed registers
@@ -653,11 +672,11 @@ begin
 				i2c_rw := '0';			
 				i2c_retadr := main99;
 				
-			-- wait a bit before polling again
+			-- wait a bit before polling the EDID again
 			when main99 =>
 				pc := millis0;
 				millis_millis := 1000;
-				millis_retadr := main0;
+				millis_retadr := main10;   
 					
 			-- uart transmit
 			when uart0 =>
