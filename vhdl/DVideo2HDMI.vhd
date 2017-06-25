@@ -51,7 +51,8 @@ entity DVideo2HDMI is
 		DVID_RGB    : in STD_LOGIC_VECTOR(11 downto 0);
 		
 		-- debugging output ---
-		DEBUG : out std_logic
+		DEBUG0 : out std_logic;
+		DEBUG1 : out std_logic
 	);	
 end entity;
 
@@ -134,7 +135,7 @@ begin
 		pll_scanclkena, 
 		pll_scandata,
 		clkpixel,
-		open,
+		DEBUG0, -- open,
 		open,
 		open
 	);
@@ -293,7 +294,7 @@ begin
 						out_ramdata := std_logic_vector(in_rgb);
 						out_ramwren := '1';
 						out_ramwraddress := std_logic_vector(to_unsigned(
-							((x+y*384) mod 16384), -- 24576),
+							((x+y*384) mod 16384), 
 							14));
 						
 						x := x+1;
@@ -307,7 +308,7 @@ begin
 		framestart <= out_framestart;
 		ram_data <= out_ramdata;	
 		ram_wren <= out_ramwren; 
-		ram_wraddress <= out_ramwraddress;
+		ram_wraddress <= out_ramwraddress(13 downto 0);
 	end process;	
 	
 	
@@ -340,12 +341,14 @@ begin
 	variable v_bp : integer;
 	variable v_addr : integer;
 	variable v_fp : integer;
---	variable v_imagestart : integer;
 	variable firstlineaddress : integer;
 	
 	begin
-	
+
+		
 		if rising_edge(clkpixel) then		
+			-- provide ram address in next clock
+
 			-- calculate the timings values according to the table
 			h_sync := timings(resolution)(0);
 			h_bp := timings(resolution)(1);
@@ -357,7 +360,6 @@ begin
 			v_bp := timings(resolution)(7);
 			v_addr := timings(resolution)(8);
 			v_fp := timings(resolution)(9);
---			v_imagestart := v_sync + v_bp + timings(resolution)(10);
 		
 			-- write output signals to registers 
 			if y<v_sync then
@@ -421,7 +423,7 @@ begin
 			end if;
 			
 			-- continue with next high-res pixel in next clock		
-			if y=v_sync+v_bp-4 and x=0 and in_framestart='0' then
+			if y=v_sync+v_bp-4 and x=0 and in_framestart='0' then --   and false then
 					-- stop progression here until framestart signal 			
 			elsif x < h_sync+h_bp+h_addr+h_fp - 1 then
 				x := x+1;
@@ -439,7 +441,6 @@ begin
 	
 		end if;
 	
-		
       adv7513_clk <= clkpixel; 
       adv7513_hs <= out_hs; 
       adv7513_vs <= out_vs;
@@ -452,6 +453,7 @@ begin
 							& out_rgb(3 downto 0);			
 
 		ram_rdaddress <= std_logic_vector(to_unsigned(pixeladdress,14));
+		
 	end process;
 
 	
@@ -654,7 +656,7 @@ begin
 						out_resolution := i;
 					end if;
 				end loop;
---		out_resolution := 2;
+--out_resolution := 2;
 				pc := main99;
 			when main16 =>  
 				-- toggle the re-read bit
@@ -910,12 +912,32 @@ begin
 		end if;
 
 	   -- async logic: set output signals according to registers
-		DEBUG <= out_tx;
+--		DEBUG <= out_tx;
 		if out_scl='0' then adv7513_scl <= '0'; else adv7513_scl <= 'Z'; end if; 
 		if out_sda='0' then adv7513_sda <= '0'; else adv7513_sda <= 'Z'; end if; 
 		resolution <= out_resolution;	
 			
 	end process;
+
+	
+	-- simple LED blinker with 1 1000th of the clock frequency	
+	process (clkpixel) 
+	variable x : std_logic := '0';
+	variable cnt : integer range 0 to 499;
+	
+	begin
+		if rising_edge(clkpixel) then
+			if cnt<499 then
+				cnt := cnt+1;
+			else 
+				cnt := 0;
+				x := not x;
+			end if;
+		end if;
+		
+		DEBUG1 <= x;
+	end process;
+
 	
 end immediate;
 

@@ -21,6 +21,7 @@ end SyncRAM;
 architecture UseBlockRAM of SyncRAM is
 type mem_t is array(0 to (2**ADDRESSWIDTH)-1) of STD_LOGIC_VECTOR(DATAWIDTH-1 downto 0);
 signal mem : mem_t;   
+signal a : STD_LOGIC_VECTOR (ADDRESSWIDTH-1 DOWNTO 0);
 begin
   process (wrclock,rdclock) 
   begin
@@ -30,7 +31,8 @@ begin
 		end if;
 	end if;
 	if rising_edge(rdclock) then
-		q <= mem(to_integer(unsigned(rdaddress)));
+		q <= mem(to_integer(unsigned(a)));
+		a <= rdaddress;
 	end if;
   end process;
 end UseBlockRAM;

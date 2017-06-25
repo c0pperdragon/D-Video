@@ -371,12 +371,12 @@ begin
 			end if ;
 			
 			-- generate sync --
-			if hcounter>=33 and hcounter<33+384/2 then 
+			if hcounter>=28 and hcounter<28+400/2 then 
 				out_hsync := '0';
 			else
 				out_hsync := '1';
 			end if;	
-			if vcounter>=26 and vcounter<26+270 then 
+			if vcounter>26 and vcounter<26+270 then 
 				out_vsync := '0';
 			else
 				out_vsync := '1';
