@@ -23,6 +23,7 @@ entity TestImagePAL is
 		-- GPIO  
 		GPIO30    : out std_logic;
 		GPIO29    : out std_logic;
+		GPIO28    : out std_logic;
 
 		GPIO0 : in std_logic
 
@@ -60,7 +61,8 @@ architecture immediate of TestImagePAL is
 		DVID_RGB    : in STD_LOGIC_VECTOR(11 downto 0);
 		
 		-- debugging output ---
-		DEBUG : out std_logic
+		DEBUG0 : out std_logic;
+		DEBUG1 : out std_logic
 	);	
 	end component;
 
@@ -118,7 +120,7 @@ begin
 		adv7513_scl, adv7513_sda, adv7513_hs, adv7513_vs, adv7513_clk,
 		adv7513_d, adv7513_de,
 		DVID_CLK, GPIO0, DVID_HSYNC, DVID_VSYNC, DVID_RGB,
-		GPIO30 );
+		GPIO29, GPIO28 );
 
 	
 	------- generator for the test image (a low-res DVideo signal)	
@@ -184,7 +186,7 @@ begin
 		end if;
 		
 		DVID_CLK <= out_clk;
-		GPIO29 <= out_clk;
+		GPIO30 <= out_clk;
 		DVID_HSYNC <= out_hsync;
 		DVID_VSYNC <= out_vsync;
 		DVID_RGB <= out_rgb;			

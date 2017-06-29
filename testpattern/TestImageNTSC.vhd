@@ -23,6 +23,7 @@ entity TestImageNTSC is
 		-- GPIO  
 		GPIO30    : out std_logic;
 		GPIO29    : out std_logic;
+		GPIO28    : out std_logic;
 
 		GPIO0 : in std_logic
 
@@ -60,7 +61,8 @@ architecture immediate of TestImageNTSC is
 		DVID_RGB    : in STD_LOGIC_VECTOR(11 downto 0);
 		
 		-- debugging output ---
-		DEBUG : out std_logic
+		DEBUG0 : out std_logic;
+		DEBUG1 : out std_logic
 	);	
 	end component;
 

@@ -4,7 +4,7 @@ JedecChain;
 	DefaultMfr(6E);
 
 	P ActionCode(Cfg)
-		Device PartName(10M08SCE144) Path("C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus_rev2/output_files/") File("dvideoboard.pof") MfrSpec(OpMask(1) Child_OpMask(2 1 1));
+		Device PartName(10M08SCE144) Path("C:/Users/Reinhard/Documents/GitHub/D-Video/atarimod/quartus_rev2/output_files/") File("dvideoboard.sof") MfrSpec(OpMask(1));
 
 ChainEnd;
 

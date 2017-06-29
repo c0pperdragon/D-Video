@@ -103,7 +103,7 @@ architecture immediate of DVideo2HDMI is
 
 	
 	constant numres : integer := timings'length;
-	signal resolution : integer range 0 to numres-1;
+	signal resolution : integer range 0 to numres;
 	
 	signal pll_areset         : std_logic;
 	signal pll_configupdate   : std_logic;
@@ -116,6 +116,7 @@ architecture immediate of DVideo2HDMI is
 	signal in_vsync : std_logic;
 	
 	signal clkpixel : std_logic;         -- pixel clock to drive HDMI 
+	signal clkpixellocked : std_logic;
 	signal framestart : std_logic;       -- signals the first part of an incomming video frame  
 	
 	signal ram_data: STD_LOGIC_VECTOR (11 DOWNTO 0);
@@ -135,7 +136,7 @@ begin
 		pll_scanclkena, 
 		pll_scandata,
 		clkpixel,
-		DEBUG0, -- open,
+		clkpixellocked,
 		open,
 		open
 	);
@@ -346,7 +347,7 @@ begin
 	begin
 
 		
-		if rising_edge(clkpixel) then		
+		if rising_edge(clkpixel) and clkpixellocked='1'  then		
 			-- provide ram address in next clock
 
 			-- calculate the timings values according to the table
@@ -454,6 +455,7 @@ begin
 
 		ram_rdaddress <= std_logic_vector(to_unsigned(pixeladdress,14));
 		
+		DEBUG0 <= out_hs;
 	end process;
 
 	
@@ -649,14 +651,13 @@ begin
 				end if;
 			when main15 =>
 				-- decide which resolution to use
-				out_resolution := 0;
-				for i in 1 to numres-1 loop
-					if  to_integer(main_edid_hor)>=timings(i)(2) 
-					and to_integer(main_edid_vert)>=timings(i)(7) then
+				out_resolution := numres-1;
+				for i in 0 to numres-2 loop
+					if  to_integer(main_edid_hor)=timings(i)(2) 
+					and to_integer(main_edid_vert)=timings(i)(8) then
 						out_resolution := i;
 					end if;
 				end loop;
---out_resolution := 2;
 				pc := main99;
 			when main16 =>  
 				-- toggle the re-read bit
@@ -919,25 +920,29 @@ begin
 			
 	end process;
 
-	
-	-- simple LED blinker with 1 1000th of the clock frequency	
-	process (clkpixel) 
-	variable x : std_logic := '0';
-	variable cnt : integer range 0 to 499;
-	
-	begin
-		if rising_edge(clkpixel) then
-			if cnt<499 then
-				cnt := cnt+1;
-			else 
-				cnt := 0;
-				x := not x;
-			end if;
-		end if;
-		
-		DEBUG1 <= x;
-	end process;
+--	
+--	-- simple LED blinker with 1 1000th of the clock frequency	
+--	process (clkpixel) 
+--	variable x : std_logic := '0';
+--	variable cnt : integer range 0 to 499;
+--	
+--	begin
+--		if rising_edge(clkpixel) then
+--			if cnt<499 then
+--				cnt := cnt+1;
+--			else 
+--				cnt := 0;
+--				x := not x;
+--			end if;
+--		end if;
+--		
+--		DEBUG1 <= x;
+--	end process;
 
+	process (DVID_VSYNC)	
+	begin
+			DEBUG1 <= DVID_VSYNC;
+	end process;
 	
 end immediate;
 
