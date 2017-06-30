@@ -174,9 +174,7 @@ set_global_assignment -name VHDL_FILE Atari800Mod.vhd
 set_global_assignment -name VHDL_FILE ../../vhdl/GTIA2DVideo.vhd
 set_global_assignment -name VHDL_FILE ../../vhdl/DVideo2HDMI.vhd
 set_global_assignment -name CDF_FILE Chain1.cdf
-set_global_assignment -name VECTOR_WAVEFORM_FILE Waveform.vwf
 set_global_assignment -name QIP_FILE PLL.qip
-set_global_assignment -name QIP_FILE dummypll.qip
 set_location_assignment PIN_110 -to GPIO29
 set_location_assignment PIN_111 -to GPIO30
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to GPIO29
