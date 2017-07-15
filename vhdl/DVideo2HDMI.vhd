@@ -272,7 +272,8 @@ begin
 			if in_available='1' then
 				
 				-- detect frame start and notify the HDMI signal generator
-				if x+y*384 = timings(resolution)(5) + 1 then 
+				if  x+y*384 >= timings(resolution)(5) + 1 
+				and x+y*384 < timings(resolution)(5) + 8  then 
 					out_framestart := '1';
 				else
 					out_framestart := '0';
