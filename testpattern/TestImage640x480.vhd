@@ -52,17 +52,17 @@ begin
 	------- generator for the HDMI test image 	
 	process (CLKPIXEL) 
 
--- ModeLine "640x480" 25.20 640 656 752 800 480 490 492 525 -HSync -VSync
+-- ModeLine "640x480" 25.17 640 656 752 800 480 490 492 525 -HSync -VSync
 	constant h_img :  integer := 640;
 	constant h_fp :   integer := 16;
 	constant h_sync : integer := 96;
-	constant h_bp :   integer := 48;
-	constant s_hsync : std_logic := '0';
+	constant h_bp :   integer := 48 + 160;  -- use 50Hz refresh
+	constant s_hsync : std_logic := '1';
 	constant v_img :  integer := 480;
 	constant v_fp :   integer := 10;
 	constant v_sync : integer := 2;
 	constant v_bp :   integer := 33;
-	constant s_vsync : std_logic := '0';
+	constant s_vsync : std_logic := '1';
 	
 	constant w : integer := h_sync + h_bp + h_img + h_fp;  -- 800
 	constant h : integer := v_sync + v_bp + v_img + v_fp;  -- 525

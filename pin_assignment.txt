@@ -1,39 +1,39 @@
 Pin assignments for the D-Video Board (Rev.2)
 
 32-pin GPIO-header
-Connector pin               MAX 10 pin       
-1             GND           -
-2             GPIO0         26
-3             GPIO1         24
-4             GPIO2         25
-5             GPIO3         21
-6             GPIO4         22
-7             GPIO5         14
-8             GPIO6         17
-9             GPIO7         12
-10            GPIO8         13
-11            GPIO9         10
-12            GPIO10        11
-13            GPIO11        7
-14            GPIO12        8
-15            GPIO13        141
-16            GPIO14        6
-17            GPIO15        135
-18            GPIO16        140
-19            GPIO17        131
-20            GPIO18        132
-21            GPIO19        127
-22            GPIO20        130
-23            GPIO21        123 
-24            GPIO22        124
-25            GPIO23        119
-26            GPIO24        120
-27            GPIO25        114
-28            GPIO26        118
-29            GPIO27        112
-30            GPIO28        113
-31            GPIO29        110
-32            GPIO30        111
+Connector pin               MAX 10 pin       ADC extension
+1             GND           -                GND
+2             GPIO0         26               VIN
+3             GPIO1         24               Y7
+4             GPIO2         25               Y6
+5             GPIO3         21               Y5
+6             GPIO4         22               Y4
+7             GPIO5         14               Y3
+8             GPIO6         17               Y2 
+9             GPIO7         12               Y1
+10            GPIO8         13               Y0
+11            GPIO9         10               n.c.
+12            GPIO10        11               n.c.
+13            GPIO11        7                PB7
+14            GPIO12        8                PB6
+15            GPIO13        141              PB5
+16            GPIO14        6                PB4
+17            GPIO15        135              PB3
+18            GPIO16        140              PB2
+19            GPIO17        131              PB1
+20            GPIO18        132              PB0
+21            GPIO19        127              GND
+22            GPIO20        130              ENCODE
+23            GPIO21        123              GND
+24            GPIO22        124              VIN
+25            GPIO23        119              PR7
+26            GPIO24        120              PR6
+27            GPIO25        114              PR5
+28            GPIO26        118              PR4
+29            GPIO27        112              PR3
+30            GPIO28        113              PR2
+31            GPIO29        110              PR1
+32            GPIO30        111              PR0
 
 
 In-board wiring of the MAX 10

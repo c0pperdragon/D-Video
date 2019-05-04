@@ -2,22 +2,154 @@ library ieee;
 use ieee.numeric_std.all;
 use ieee.std_logic_1164.all;
 
--- Chip configuration sequence
+-- Implement a simple test image generator for the D-Video board.
 
-entity ConfigureADV7513 is	
+
+entity TestImage288p is	
 	port (
-		CLK50: in std_logic;			
+	   -- clocking input
+		CLK50: in std_logic;	
 		
+	   -- HDMI interface
 		adv7513_scl: inout std_logic; 
-		adv7513_sda: inout std_logic;
+		adv7513_sda: inout std_logic; 
+      adv7513_hs : out std_logic; 
+      adv7513_vs : out std_logic;
+      adv7513_clk : out std_logic;
+      adv7513_d : out STD_LOGIC_VECTOR(23 downto 0);
+      adv7513_de : out std_logic;
 		
-		SERIALOUT: out std_logic
-	);
+		CLKADC    : out std_logic
+	);	
 end entity;
 
 
-architecture immediate of ConfigureADV7513 is
+architecture immediate of TestImage288p is
+
+component PLL_141 is
+PORT
+	(
+		inclk0		: IN STD_LOGIC  := '0';
+		c0		: OUT STD_LOGIC 
+	);
+end component;
+	
+signal CLKPIXEL    : std_logic;
+		
 begin		
+	pixelclockgenerator: PLL_141 port map ( CLK50, CLKPIXEL );
+	
+	--- drive the ADCs for testing 
+	process (CLKPIXEL)
+	variable c:std_logic := '0';
+	begin
+		if rising_edge(CLKPIXEL) then
+			if c='0' then c:='1'; else c:='0'; end if;
+		end if;
+		CLKADC <= c;
+	end process;
+
+	------- generator for the HDMI test image 	
+	process (CLKPIXEL) 
+	
+-- 148.5 1920 1960 2016 2200 1080 1082 1088 1125	
+	
+	constant h_sync : integer := 184;
+	constant h_bp :   integer := 288;
+	constant h_img :  integer := 1680;
+	constant h_fp :   integer := 104;
+	constant v_sync : integer := 3;
+	constant v_bp :   integer := 194;
+	constant v_img :  integer := 1050;
+	constant v_fp :   integer := 1;
+	
+	constant w : integer := h_sync + h_bp + h_img + h_fp;  -- 1840
+	constant h : integer := v_sync + v_bp + v_img + v_fp;  -- 1248
+
+	variable x:integer range 0 to w-1:= 0;  
+	variable y:integer range 0 to h-1 := 0;  	
+	variable framecounter:integer range 0 to 127 := 0;
+	variable jitter: integer range 0 to 7 := 0;
+	
+	variable out_hs  : std_logic := '0';
+	variable out_vs  : std_logic := '0';
+	variable out_clk : std_logic := '0';
+	variable out_d : std_logic_vector(23 downto 0) := "000000000000000000000000";    
+	variable out_de  : std_logic := '0';    
+	variable out_test : std_logic := '0';
+	
+	variable px:integer range 0 to h_img-1;  
+	variable py:integer range 0 to v_img-1; 	
+		
+	begin
+
+		if rising_edge(CLKPIXEL) then
+			-- create output signals
+			out_d := "000000000000000000000000";
+			out_de := '0';
+			if x<h_sync then
+				out_hs := '1';
+			else
+				out_hs := '0';
+			end if;
+			if y<v_sync then
+				out_vs := '1';
+			else
+				out_vs := '0';
+			end if;
+			
+			if   x>=h_sync+h_bp and x<h_sync+h_bp+h_img 
+			and  y>=v_sync+v_bp and y<v_sync+v_bp+v_img 
+			then
+				out_de := '1';
+				px := x-h_sync-h_bp;
+				py := y-v_sync-v_bp;
+				if px=0 or py=0 or px=h_img-1 or py=v_img-1 then
+					out_d := "111111111111111111111111";
+				elsif px<1024 then
+					out_d := std_logic_vector(to_unsigned(px mod 256, 8)) 
+							 &	std_logic_vector(to_unsigned(py mod 256, 8))  
+							 &	std_logic_vector(to_unsigned(
+								(px/256)*16 + (py/256)*64, 8));				
+				else
+					if px>=1400 and px<1500 and framecounter<8 then
+						out_d := "111111111111111111111111";
+					end if;
+				end if;		
+
+				if framecounter<8 then
+					out_test := '1';
+				else
+					out_test := '0';
+				end if;
+			end if;
+			
+			
+			-- progress counters
+			if x<w-1+jitter then
+				x:=x+1;
+			else
+				x:= 0;
+				if y<h-1 then
+					y:=y+1;
+				else
+					y:=0;
+					framecounter := framecounter+1;
+					jitter := framecounter mod 4;
+				end if;
+			end if;
+		end if;
+			
+		
+      adv7513_hs <= out_hs;
+      adv7513_vs <= out_vs;
+      adv7513_clk <= CLKPIXEL;
+		adv7513_d <= out_d;
+      adv7513_de <= out_de;
+--		GPIO30 <= out_test;
+	end process;
+
+		
 	
 	-- Control program to initialize the HDMI transmitter and
 	-- to retrieve monitor configuration data to select 
@@ -25,19 +157,16 @@ begin
 	-- The process implements a serial program with subroutine calls
 	-- using a big state machine.
 	process (CLK50)
-		type T_hexdigit is array(0 to 15) of integer range 0 to 255;
-		constant hexdigit : T_hexdigit :=
-			(48,49,50,51,52,53,54,55,56,57, 65,66,67,68,69,70);
-	
 		-- configuration data
 		type T_CONFIGPAIR is array(0 to 1) of integer range 0 to 255;
 		type T_CONFIGDATA is array(natural range <>) of T_CONFIGPAIR;
 		constant CONFIGDATA : T_CONFIGDATA := (
-					-- power registers
+                    -- power registers
+--				(16#41#, 2#01000000#), -- power down to reset everything
 				(16#41#, 2#00000000#), -- power down inactive
 				(16#D6#, 2#11000000#), -- HPD is always high
 				
-					-- fixed registers
+                    -- fixed registers
 				(16#98#, 16#03#), 
 				(16#9A#, 16#e0#), 
 				(16#9C#, 16#30#),
@@ -47,16 +176,11 @@ begin
 				(16#E0#, 16#D0#),
 				(16#F9#, 16#00#),
 				
-					-- force to DVI mode
+				                 -- force to DVI mode
 				(16#AF#, 16#00#),  
 
-					-- sync adjustment activation
-				(16#41#, 16#00#), -- disable sync adjustment
-
-					-- video input format
-				(16#15#, 16#00#),-- inputID = 0 (standard)
-
-					-- video output format
+  				                 -- video input and output format
+				(16#15#, 16#00#),-- inputID = 1 (standard)
 				                 -- 0x16[7]   = 0b0  .. Output format = 4x4x4
 								     -- 0x16[5:4] = 0b11 .. color depth = 8 bit
 									  -- 0x16[3:2] = 0x00 .. input style undefined
@@ -64,19 +188,17 @@ begin
 									  -- 0x16[0]   = 0b0  .. output color space = RGB
 				(16#16#, 16#30#),		
 				
-					-- sync polarity not used (only pass-through)
-				(16#17#, 16#00#), 		
-
-					-- output color space converter disable
-				(16#18#, 16#00#),   		
-				
-					-- edid address (slave address=3F)
+				                 -- edid address (slave address=3F)
 				(16#43#, 2#01111110#),
-					-- various unused options - force to default
+				
+				                 -- various unused options - force to default
+				(16#17#, 16#00#), 		
+				(16#18#, 16#00#),  -- output color space converter disable 		
 				(16#48#, 16#00#),
 				(16#BA#, 16#60#),
 				(16#D0#, 16#30#),
 				(16#40#, 16#00#),
+				(16#41#, 16#00#),
 				(16#D5#, 16#00#),
 				(16#FB#, 16#00#),
 				(16#3B#, 16#00#)
@@ -86,7 +208,7 @@ begin
 		-- implement the program counter with states
 		type t_pc is (
 			main0,main1,main2,main3,main10,
-			main11,main12,main13,main14,main15,main16,main17,main99,
+			-- main11,main12,main13,main14,main15,main16,main17,main99,
 			i2c0,i2c1,i2c2,i2c3,i2c3a,i2c4,i2c5,i2c6,i2c7,i2c8,i2c9,
 			i2c10,i2c11,i2c12,i2c13,i2c14,i2c16,i2c17,i2c18,i2c19,
 			i2c20,i2c21,i2c99,i2c100,i2c101,
@@ -98,8 +220,8 @@ begin
 		variable pc : t_pc := main0;
 	  	
 		variable main_i:integer range 0 to 255;
-		variable main_edid_hor:  unsigned(11 downto 0);
-		variable main_edid_vert: unsigned(11 downto 0);
+--		variable main_edid_hor:  unsigned(11 downto 0);
+--		variable main_edid_vert: unsigned(11 downto 0);
 		
 		-- subroutine: uart	
 		variable uart_retadr:t_pc;   
@@ -171,57 +293,59 @@ begin
 					main_i := 0;
 					pc := main10;
 				end if;
-				
-			-- read out EDID memory
 			when main10 =>
-				pc := i2c0;
-				i2c_address := to_unsigned(16#3F#,7); -- to_unsigned(16#39#,7);
-				i2c_register := to_unsigned(main_i,8);
-				i2c_rw := '1';			
-				i2c_retadr := main11;
-			when main11 =>
-				if i2c_error/="00000000" then
-					pc := uart0;
-					uart_data := i2c_error; 
-					uart_retadr := main99;
-				else				
-					-- memorize native resolution info
-					if main_i=54+2 then
-						main_edid_hor(7 downto 0) := i2c_data;
-					elsif main_i=54+4 then
-						main_edid_hor(11 downto 8) := i2c_data(7 downto 4);
-					elsif main_i=54+5 then
-						main_edid_vert(7 downto 0) := i2c_data;
-					elsif main_i=54+7 then
-						main_edid_vert(11 downto 8) := i2c_data(7 downto 4);
-					end if;
-					pc := uart0;
-					uart_data := to_unsigned(hexdigit(to_integer(i2c_data(7 downto 4))),8);
-					uart_retadr := main12;
-				end if;
-			when main12 =>
-				pc := uart0;
-				uart_data := to_unsigned(hexdigit(to_integer(i2c_data(3 downto 0))),8);
-				uart_retadr := main13;
-			when main13 =>
-				pc := uart0;
-				if (main_i mod 16) = 15 then 
-					uart_data := to_unsigned(10,8);
-				else
-					uart_data := to_unsigned(32,8);
-				end if;
-				uart_retadr := main14;			
-			when main14 =>
-				if main_i < 127 then
-					main_i := main_i + 1;
-					pc := main10;
-				else
-					pc := uart0;
-					uart_data := to_unsigned(10,8);
-					uart_retadr := main15;			
-				end if;
-			when main15 =>
-				-- decide which resolution to use
+				pc := main10;
+				
+--			-- read out EDID memory
+--			when main10 =>
+--				pc := i2c0;
+--				i2c_address := to_unsigned(16#3F#,7); -- to_unsigned(16#39#,7);
+--				i2c_register := to_unsigned(main_i,8);
+--				i2c_rw := '1';			
+--				i2c_retadr := main11;
+--			when main11 =>
+--				if i2c_error/="00000000" then
+--					pc := uart0;
+--					uart_data := i2c_error; 
+--					uart_retadr := main99;
+--				else				
+--					-- memorize native resolution info
+--					if main_i=54+2 then
+--						main_edid_hor(7 downto 0) := i2c_data;
+--					elsif main_i=54+4 then
+--						main_edid_hor(11 downto 8) := i2c_data(7 downto 4);
+--					elsif main_i=54+5 then
+--						main_edid_vert(7 downto 0) := i2c_data;
+--					elsif main_i=54+7 then
+--						main_edid_vert(11 downto 8) := i2c_data(7 downto 4);
+--					end if;
+--					pc := uart0;
+--					uart_data := to_unsigned(hexdigit(to_integer(i2c_data(7 downto 4))),8);
+--					uart_retadr := main12;
+--				end if;
+--			when main12 =>
+--				pc := uart0;
+--				uart_data := to_unsigned(hexdigit(to_integer(i2c_data(3 downto 0))),8);
+--				uart_retadr := main13;
+--			when main13 =>
+--				pc := uart0;
+--				if (main_i mod 16) = 15 then 
+--					uart_data := to_unsigned(10,8);
+--				else
+--					uart_data := to_unsigned(32,8);
+--				end if;
+--				uart_retadr := main14;			
+--			when main14 =>
+--				if main_i < 127 then
+--					main_i := main_i + 1;
+--					pc := main10;
+--				else
+--					pc := uart0;
+--					uart_data := to_unsigned(10,8);
+--					uart_retadr := main15;			
+--				end if;
+--			when main15 =>
+--				-- decide which resolution to use
 --				out_resolution := numres-1;
 --				for i in 0 to numres-2 loop
 --					if  to_integer(main_edid_hor)=timings(i)(2) 
@@ -229,28 +353,28 @@ begin
 --						out_resolution := i;
 --					end if;
 --				end loop;
-				pc := main99;
-			when main16 =>  
-				-- toggle the re-read bit
-				pc := i2c0;
-				i2c_address := to_unsigned(16#39#,7);
-				i2c_register := to_unsigned(16#C9#,8);
-				i2c_data := to_unsigned(2#00000011#,8);
-				i2c_rw := '0';			
-				i2c_retadr := main17;
-			when main17 =>  -- toggle the re-read bit
-				pc := i2c0;
-				i2c_address := to_unsigned(16#39#,7);
-				i2c_register := to_unsigned(16#C9#,8);
-				i2c_data := to_unsigned(2#00010011#,8);
-				i2c_rw := '0';			
-				i2c_retadr := main99;
-				
-			-- wait a bit before polling the EDID again
-			when main99 =>
-				pc := millis0;
-				millis_millis := 1000;
-				millis_retadr := main10;   
+--				pc := main99;
+--			when main16 =>  
+--				-- toggle the re-read bit
+--				pc := i2c0;
+--				i2c_address := to_unsigned(16#39#,7);
+--				i2c_register := to_unsigned(16#C9#,8);
+--				i2c_data := to_unsigned(2#00000011#,8);
+--				i2c_rw := '0';			
+--				i2c_retadr := main17;
+--			when main17 =>  -- toggle the re-read bit
+--				pc := i2c0;
+--				i2c_address := to_unsigned(16#39#,7);
+--				i2c_register := to_unsigned(16#C9#,8);
+--				i2c_data := to_unsigned(2#00010011#,8);
+--				i2c_rw := '0';			
+--				i2c_retadr := main99;
+--				
+--			-- wait a bit before polling the EDID again
+--			when main99 =>
+--				pc := millis0;
+--				millis_millis := 1000;
+--				millis_retadr := main10;   
 					
 			-- uart transmit
 			when uart0 =>
@@ -484,7 +608,7 @@ begin
 		end if;
 
 	   -- async logic: set output signals according to registers
-		SERIALOUT <= out_tx;
+--		GPIO29 <= out_tx;
 		if out_scl='0' then adv7513_scl <= '0'; else adv7513_scl <= 'Z'; end if; 
 		if out_sda='0' then adv7513_sda <= '0'; else adv7513_sda <= 'Z'; end if; 
 --		resolution <= out_resolution;	

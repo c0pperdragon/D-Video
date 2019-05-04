@@ -39,7 +39,7 @@
 
 set_global_assignment -name FAMILY "MAX 10"
 set_global_assignment -name DEVICE 10M08SCE144C8G
-set_global_assignment -name TOP_LEVEL_ENTITY TestImage1680x1050
+set_global_assignment -name TOP_LEVEL_ENTITY Upscaler1680x1050
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 16.0.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "15:30:39  MARCH 03, 2017"
 set_global_assignment -name LAST_QUARTUS_VERSION "18.0.0 Lite Edition"
@@ -86,22 +86,6 @@ set_location_assignment PIN_65 -to adv7513_d[22]
 set_location_assignment PIN_66 -to adv7513_d[23]
 set_location_assignment PIN_69 -to adv7513_sda
 set_location_assignment PIN_70 -to adv7513_scl
-set_location_assignment PIN_130 -to CLKADC
-set_global_assignment -name VHDL_FILE TestImage640x480.vhd
-set_global_assignment -name VHDL_FILE TestImage1080p.vhd
-set_global_assignment -name VHDL_FILE TestImage1680x1050.vhd
-set_global_assignment -name VHDL_FILE ConfigureADV7513.vhd
-set_global_assignment -name SDC_FILE dvideoboard.sdc
-set_global_assignment -name QIP_FILE PLL114_816.qip
-set_global_assignment -name CDF_FILE Run.cdf
-set_global_assignment -name QIP_FILE PLL_148_5.qip
-set_global_assignment -name QIP_FILE PLL_141.qip
-set_global_assignment -name QIP_FILE PLL_25_2.qip
-set_location_assignment PIN_7 -to SERIALOUT
-set_global_assignment -name CDF_FILE Prog.cdf
-set_location_assignment PIN_110 -to testout
-set_global_assignment -name QIP_FILE PLL_25_17.qip
-set_global_assignment -name QIP_FILE PLL_143_5.qip
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
@@ -138,12 +122,37 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7513_d[23]
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7513_d
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7513_sda
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7513_scl
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to CLKADC
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to SERIALOUT
-set_instance_assignment -name IO_STANDARD LVDS_E_3R -to testout
-set_global_assignment -name QIP_FILE PLL_119_5.qip
-set_global_assignment -name QIP_FILE PLL_172_2.qip
-set_global_assignment -name QIP_FILE PLL_121_8.qip
-set_global_assignment -name QIP_FILE PLL_152_3.qip
-set_global_assignment -name QIP_FILE PLL_126_5.qip
+set_location_assignment PIN_130 -to ENCODE
+set_location_assignment PIN_7 -to PB[7]
+set_location_assignment PIN_8 -to PB[6]
+set_location_assignment PIN_141 -to PB[5]
+set_location_assignment PIN_6 -to PB[4]
+set_location_assignment PIN_135 -to PB[3]
+set_location_assignment PIN_140 -to PB[2]
+set_location_assignment PIN_131 -to PB[1]
+set_location_assignment PIN_132 -to PB[0]
+set_location_assignment PIN_119 -to PR[7]
+set_location_assignment PIN_120 -to PR[6]
+set_location_assignment PIN_114 -to PR[5]
+set_location_assignment PIN_118 -to PR[4]
+set_location_assignment PIN_112 -to PR[3]
+set_location_assignment PIN_113 -to PR[2]
+set_location_assignment PIN_110 -to PR[1]
+set_location_assignment PIN_111 -to PR[0]
+set_location_assignment PIN_24 -to Y[7]
+set_location_assignment PIN_25 -to Y[6]
+set_location_assignment PIN_21 -to Y[5]
+set_location_assignment PIN_22 -to Y[4]
+set_location_assignment PIN_14 -to Y[3]
+set_location_assignment PIN_17 -to Y[2]
+set_location_assignment PIN_12 -to Y[1]
+set_location_assignment PIN_13 -to Y[0]
+set_global_assignment -name VHDL_FILE ram_dual.vhd
+set_global_assignment -name VHDL_FILE Upscaler1680x1050.vhd
+set_global_assignment -name VHDL_FILE ConfigureADV7513.vhd
+set_global_assignment -name SDC_FILE dvideoboard.sdc
+set_global_assignment -name CDF_FILE Run.cdf
+set_global_assignment -name QIP_FILE PLL_148_5.qip
+set_global_assignment -name CDF_FILE Prog.cdf
+set_global_assignment -name QIP_FILE PLL141.qip
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
