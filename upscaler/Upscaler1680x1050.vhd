@@ -239,10 +239,10 @@ begin
 					-- compute output green
 					tmp_g := 4096
 					       + in_y * 8 
-					       + 256*2
-							 - in_pb * 2        -- ca. 0.29
-							 + 256*5
-							 - in_pr * 5;       -- ca. 0.7
+					       + 256 * 3
+							 - in_pb * 3        
+							 + 256 * 4
+							 - in_pr * 4;       
 					if tmp_g<4096 then 
 						adv7513_d(23 downto 16) <= "00000000";
 					elsif tmp_g>=4096+255*4 then
