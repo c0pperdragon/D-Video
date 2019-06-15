@@ -12,8 +12,8 @@ use ieee.std_logic_1164.all;
 -- When quadrupling every input line we need a output line frequency of 62500Hz, and thus 
 -- an output pixel frequency of 141Mhz.
 -- 
+-- PAL line frequency: 15625 Hz -> 2256 perfect fit.
 -- NTSC line frequency: 15734 Hz  ->  2240 total pixels in quadrupel output mode
-
 
 entity Upscaler1680x1050 is	
 	port (
@@ -129,7 +129,7 @@ begin
 
 	------ scan input lines and detect hsync and vsync	
 	process (CLKPIXEL)
-	constant tunex : integer := 1700;
+	constant tunex : integer := 1750;
 	
 	variable x : integer range 0 to 16383;
 	variable syncduration : integer range 0 to 16383;
@@ -206,7 +206,7 @@ begin
 	variable y:integer range 0 to 2047:= 0;  	
 
 	variable inputlinetime : integer range 0 to 16383;
-	constant w : integer range 0 to 4095 := 2242;
+	constant w : integer range 0 to 4095 := 2256;
 	
 	variable in_y : integer range 0 to 511;
 	variable in_pb : integer range 0 to 511;
@@ -239,8 +239,8 @@ begin
 					-- compute output green
 					tmp_g := 4096
 					       + in_y * 8 
-					       + 256 * 3
-							 - in_pb * 3        
+					       + 256 * 6
+							 - in_pb * 6        
 							 + 256 * 4
 							 - in_pr * 4;       
 					if tmp_g<4096 then 
