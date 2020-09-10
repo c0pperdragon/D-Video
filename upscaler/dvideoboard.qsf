@@ -55,7 +55,6 @@ set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 set_global_assignment -name FLOW_ENABLE_POWER_ANALYZER ON
 set_global_assignment -name POWER_DEFAULT_INPUT_IO_TOGGLE_RATE "12.5 %"
 set_location_assignment PIN_88 -to CLK50
-set_location_assignment PIN_27 -to adv7513_spdif
 set_location_assignment PIN_28 -to adv7513_vs
 set_location_assignment PIN_29 -to adv7513_hs
 set_location_assignment PIN_30 -to adv7513_de
@@ -90,7 +89,6 @@ set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to CLK50
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7513_spdif
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7513_vs
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7513_hs
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7513_de
@@ -123,36 +121,65 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7513_d
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7513_sda
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7513_scl
 set_location_assignment PIN_130 -to ENCODE
-set_location_assignment PIN_7 -to PB[7]
-set_location_assignment PIN_8 -to PB[6]
-set_location_assignment PIN_141 -to PB[5]
-set_location_assignment PIN_6 -to PB[4]
-set_location_assignment PIN_135 -to PB[3]
-set_location_assignment PIN_140 -to PB[2]
-set_location_assignment PIN_131 -to PB[1]
-set_location_assignment PIN_132 -to PB[0]
-set_location_assignment PIN_119 -to PR[7]
-set_location_assignment PIN_120 -to PR[6]
-set_location_assignment PIN_114 -to PR[5]
-set_location_assignment PIN_118 -to PR[4]
-set_location_assignment PIN_112 -to PR[3]
-set_location_assignment PIN_113 -to PR[2]
-set_location_assignment PIN_110 -to PR[1]
-set_location_assignment PIN_111 -to PR[0]
-set_location_assignment PIN_24 -to Y[7]
-set_location_assignment PIN_25 -to Y[6]
-set_location_assignment PIN_21 -to Y[5]
-set_location_assignment PIN_22 -to Y[4]
-set_location_assignment PIN_14 -to Y[3]
-set_location_assignment PIN_17 -to Y[2]
-set_location_assignment PIN_12 -to Y[1]
-set_location_assignment PIN_13 -to Y[0]
+set_location_assignment PIN_7 -to G[7]
+set_location_assignment PIN_8 -to G[6]
+set_location_assignment PIN_141 -to G[5]
+set_location_assignment PIN_6 -to G[4]
+set_location_assignment PIN_135 -to G[3]
+set_location_assignment PIN_140 -to G[2]
+set_location_assignment PIN_131 -to G[1]
+set_location_assignment PIN_132 -to G[0]
+set_location_assignment PIN_119 -to B[7]
+set_location_assignment PIN_120 -to B[6]
+set_location_assignment PIN_114 -to B[5]
+set_location_assignment PIN_118 -to B[4]
+set_location_assignment PIN_112 -to B[3]
+set_location_assignment PIN_113 -to B[2]
+set_location_assignment PIN_110 -to B[1]
+set_location_assignment PIN_111 -to B[0]
+set_location_assignment PIN_24 -to R[7]
+set_location_assignment PIN_25 -to R[6]
+set_location_assignment PIN_21 -to R[5]
+set_location_assignment PIN_22 -to R[4]
+set_location_assignment PIN_14 -to R[3]
+set_location_assignment PIN_17 -to R[2]
+set_location_assignment PIN_12 -to R[1]
+set_location_assignment PIN_13 -to R[0]
 set_global_assignment -name VHDL_FILE ram_dual.vhd
 set_global_assignment -name VHDL_FILE Upscaler1680x1050.vhd
 set_global_assignment -name VHDL_FILE ConfigureADV7513.vhd
 set_global_assignment -name SDC_FILE dvideoboard.sdc
 set_global_assignment -name CDF_FILE Run.cdf
-set_global_assignment -name QIP_FILE PLL_148_5.qip
 set_global_assignment -name CDF_FILE Prog.cdf
-set_global_assignment -name QIP_FILE PLL141.qip
+set_global_assignment -name QIP_FILE PLL120.qip
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to B[7]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to B[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to B[5]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to B[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to B[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to B[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to B[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to B[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to B
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to CSYNC
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to ENCODE
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to G[7]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to G[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to G[5]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to G[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to G[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to G[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to G[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to G[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to G
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to R[7]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to R[6]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to R[5]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to R[4]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to R[3]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to R[2]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to R[1]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to R[0]
+set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to R
+set_location_assignment PIN_10 -to CSYNC
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

@@ -2,18 +2,22 @@ library ieee;
 use ieee.numeric_std.all;
 use ieee.std_logic_1164.all;
 
--- Implement an upscaler from a standard resoultion video signal to 1680x1050 HDMI.
+-- Implement a PAL upscaler for a 288p video signal to 1680x1050 HDMI.
 -- All lines are quadrupled, and the horizontal sync slip between input and output is
--- compensated by adding/removing pixels from the end of each output line.
+-- compensated by adding/removing pixels from the end of each output line (my monitor can handle that).
 -- To match the vertical resolution also, the output will append as much additional blanking
 -- lines as necessary.
 --
--- The default horizontal output pixel timings for this mode is: 1680 1784 1968 2256   
--- When quadrupling every input line we need a output line frequency of 62500Hz, and thus 
--- an output pixel frequency of 141Mhz.
+-- To keep a reasonable aspect ratio when quadrupling the output lines, the input signal must 
+-- be sampled with about 30 Mhz. 
+-- As there is only a single PLL, the output pixel clock must be some possible multiple of this, which
+-- for simplicity can just be 120.
 -- 
--- PAL line frequency: 15625 Hz -> 2256 perfect fit.
--- NTSC line frequency: 15734 Hz  ->  2240 total pixels in quadrupel output mode
+-- PAL line frequency: 15625 Hz -> 1920 samples per line total, 312 lines per frame (50.08 Hz)
+
+-- HDMI geometry     TOTAL   SYNC   BP  VISIBLE   FP
+--    horizontal:    1920    44     64     1680  132
+--    vertical:      1248    8      64     1050  126
 
 entity Upscaler1680x1050 is	
 	port (
@@ -30,20 +34,23 @@ entity Upscaler1680x1050 is
       adv7513_de : out std_logic;
 		
 		-- ADC interface
-		Y : in std_logic_vector(7 downto 0);
-		PB : in std_logic_vector(7 downto 0);
-		PR : in std_logic_vector(7 downto 0);
-		ENCODE : out std_logic
+		R : in std_logic_vector(7 downto 0);
+		G : in std_logic_vector(7 downto 0);
+		B : in std_logic_vector(7 downto 0);
+		ENCODE : out std_logic;
+		
+		-- CSYNC signal (not through ADCs)
+		CSYNC : in std_logic
 	);	
 end entity;
 
 
 architecture immediate of Upscaler1680x1050 is
 
-component PLL141 is
+component PLL120 is
 PORT
 	(
-		inclk0		: IN STD_LOGIC  := '0';
+		inclk0: IN STD_LOGIC  := '0';
 		c0		: OUT STD_LOGIC 
 	);
 end component;
@@ -78,244 +85,201 @@ end component;
 	
 signal CLKPIXEL    : std_logic;
 
-signal Y_IN : std_logic_vector(7 downto 0);
-signal PB_IN : std_logic_vector(7 downto 0);
-signal PR_IN : std_logic_vector(7 downto 0);
-signal PB_IDLE : std_logic_vector(7 downto 0);
-signal PR_IDLE : std_logic_vector(7 downto 0);
+signal QUARTERLINEBEGIN : boolean;
+signal FIRSTLINEBEGIN : boolean;
 
-signal HSYNC : std_logic;
-signal VSYNC : std_logic;
-signal EVENLINE : std_logic;
-
-signal bufferrdaddress : std_logic_vector(11 downto 0);
-signal bufferwraddress : std_logic_vector(11 downto 0);
+signal bufferwraddress : integer range 0 to 4095;
+signal bufferwrdata : std_logic_vector(23 downto 0);
+signal bufferrdaddress : integer range 0 to 4095;
 signal bufferq : std_logic_vector(23 downto 0);
 		
 begin		
-	pixelclockgenerator: PLL141 port map ( CLK50, CLKPIXEL );
+	pixelclockgenerator: PLL120 port map ( CLK50, CLKPIXEL );
 	
 	configurator: ConfigureADV7513 port map 
 		( CLK50, adv7513_scl, adv7513_sda, open);
 
 	linebuffer : ram_dual generic map(data_width => 24, addr_width => 12)
 		port map (
-			Y_IN & PB_IN & PR_IN,
-			bufferrdaddress,
-			bufferwraddress,
+			bufferwrdata,
+			std_logic_vector(to_unsigned(bufferrdaddress,12)),
+			std_logic_vector(to_unsigned(bufferwraddress,12)),
 			'1',
 			CLKPIXEL,
 			CLKPIXEL,
 			bufferq		
 		);
 	
-	------- drive the ADCs 	
-	process (CLKPIXEL) 
-	variable p:std_logic := '0';
+
+	------ input sampling ---
+	process (CLKPIXEL)
+		variable in_csync : std_logic;
+		variable prev_csync : std_logic;
+		variable in_r : integer range 0 to 255;
+		variable in_g : integer range 0 to 255;
+		variable in_b : integer range 0 to 255;
+
+		variable x4 : integer range 0 to 8191;
+		variable y : integer range 0 to 511;
+		variable prevx4 : integer range 0 to 8191;
+		variable synclowtime : integer range 0 to 8191;
+				
+		variable scaled_r : integer range 0 to 255;
+		variable scaled_g : integer range 0 to 255;
+		variable scaled_b : integer range 0 to 255;
+		constant darkest : integer := 20;
+		constant lightest : integer := 190;
 	begin
 		if rising_edge(CLKPIXEL) then
-			if p='0' then
-				p:='1';
-				ENCODE <= '1';
-				Y_IN <= Y;
-				PB_IN <= PB;
-				PR_IN <= PR;
-			else
-				p:='0';
-				ENCODE <= '0';
+			-- take sample at correct phase and adjust colors
+			if x4 mod 4 = 0 then
+					if in_r<darkest then scaled_r:=0; 
+					elsif in_r>lightest then scaled_r:=255;
+					else scaled_r := (in_r-darkest) + (in_r-darkest)/2;
+					end if;
+					if in_g<darkest then scaled_g:=0; 
+					elsif in_g>lightest then scaled_g:=255;
+					else scaled_g := (in_g-darkest) + (in_g-darkest)/2;
+					end if;
+					if in_b<darkest then scaled_b:=0; 
+					elsif in_b>lightest then scaled_b:=255;
+					else scaled_b := (in_b-darkest) + (in_b-darkest)/2;
+					end if;
 			end if;
+						
+			-- emit follow-up encode pulses for the ADCs 
+			if x4 mod 4 = 0 then
+				ENCODE <= '1';
+			elsif x4 mod 4 = 2 then
+				ENCODE <= '0';
+			end if;			
+			
+			-- generate the sync pulses to lock the HDMI output to
+			QUARTERLINEBEGIN <= x4=0 or x4=prevx4/4 or x4=prevx4/2 or x4=prevx4/2+prevx4/4;			
+			FIRSTLINEBEGIN <= x4=0 and y=10;
+			
+			-- progress counters according to sync 
+			-- detect falling edge of csync (only accept if in approximately correct place)
+			if in_csync='0' and prev_csync='1' and x4>=7000 then
+				if synclowtime>4000 then
+					y := 0;
+				elsif y<511 then
+					y := y+1;
+				end if;
+				synclowtime := 0;
+				prevx4 := x4;
+				x4 := 0;
+			else
+				-- keep track of how much time the csync was low (to detect a vsync)
+				if in_csync='0' and synclowtime<8191 then
+					synclowtime := synclowtime+1;
+				end if;
+				-- normal x counter progressing
+				if x4<8191 then 
+					x4 := x4+1;
+				end if;
+			end if;
+			
+			-- registered input
+			prev_csync := in_csync;
+			in_csync := CSYNC;
+			in_r := to_integer(unsigned(R));
+			in_g := to_integer(unsigned(G));
+			in_b := to_integer(unsigned(B));
 		end if;
+		
+		-- determine where to write next pixel to and what to write
+		bufferwraddress <= (x4/4) + 2048*(y mod 2);
+		bufferwrdata <= std_logic_vector(to_unsigned(scaled_r,8))
+			& std_logic_vector(to_unsigned(scaled_g,8))
+			& std_logic_vector(to_unsigned(scaled_b,8));
+		
 	end process;
 
-	------ scan input lines and detect hsync and vsync	
-	process (CLKPIXEL)
-	constant tunex : integer := 1750;
 	
-	variable x : integer range 0 to 16383;
-	variable syncduration : integer range 0 to 16383;
-	variable nowsync : boolean := false;
-	variable prevsync : boolean := false;
-	
-	begin
-		if rising_edge(CLKPIXEL) then
-			
-			if nowsync and (not prevsync) and x>8000 then
-				HSYNC <= '0';
-				if syncduration>6000 then 
-					VSYNC <= '0';
-				else
-					VSYNC <= '1';
-				end if;
-				x := 0;
-				syncduration := 0;
-				bufferwraddress <= EVENLINE & "11111111111";
-				if EVENLINE='0' then
-					EVENLINE <= '1';
-				else
-					EVENLINE <= '0';
-				end if;
-			else
-				HSYNC <= '1';
-				VSYNC <= '1';
-				
-				if x=100 then
-					PB_IDLE <= PB_IN;
-					PR_IDLE <= PR_IN;
-				end if;
-				
-				if x>=tunex and x<tunex+8192 then
-					bufferwraddress <= EVENLINE & std_logic_vector(to_unsigned((x-tunex)/4,11));
-				else
-					bufferwraddress <= EVENLINE & "11111111111";				
-				end if;
-				if x/=16383 then x := x+1; end if;
-				if nowsync and syncduration/=16383 then syncduration:=syncduration+1; end if;
-			end if;
-		
-			prevsync := nowsync;
-			nowsync := to_integer(unsigned(Y_IN)) < 30;
-		end if;
-	end process;
-	
-	
-	
-	
-	------- send the pixel clock to the HDMI transmitter 
+	------- forward the pixel clock to the HDMI transmitter 
 	process (CLKPIXEL)
 	begin
       adv7513_clk <= CLKPIXEL;
 	end process;
 	
-	
-	------- generator for the HDMI test image 	
+	------- pixel output generation 
 	process (CLKPIXEL) 
 	
-	constant h_sync : integer := 184;
-	constant h_bp :   integer := 288;
-	constant h_img :  integer := 1680;
---	constant h_fp :   integer := 104;
+		constant h_sync : integer := 44;
+		constant h_bp :   integer := 64;
+		constant h_img :  integer := 1680;
+		constant h_fp :   integer := 132;
 
-	constant v_fp :   integer := 4;
-	constant v_sync : integer := 2;
-	constant v_bp :   integer := 2;
---	constant v_img :  integer := 1050;
---	constant v_fp :   integer := 312*4 - v_sync - v_bp - v_img;   -- 50Hz
---	constant v_img :  integer := 1040;
-	
-	variable x:integer range 0 to 4095:= 0;  
-	variable y:integer range 0 to 2047:= 0;  	
+		constant v_sync : integer := 8;
+		constant v_bp :   integer := 64;
+		constant v_img :  integer := 1050;
+		constant v_fp :   integer := 126 + 500; -- need external sync for proper frame
+		
+		variable x:integer range 0 to 2047:= 0;  
+		variable y:integer range 0 to 2047:= 0;  	
 
-	variable inputlinetime : integer range 0 to 16383;
-	constant w : integer range 0 to 4095 := 2256;
-	
-	variable in_y : integer range 0 to 511;
-	variable in_pb : integer range 0 to 511;
-	variable in_pr : integer range 0 to 511;
-	variable tmp_g : integer range 0 to 8191;
+	--	variable inputlinetime : integer range 0 to 16383;
+	--	constant w : integer range 0 to 4095 := 2256;
+		
+	--	variable in_y : integer range 0 to 511;
+	--	variable in_pb : integer range 0 to 511;
+	--	variable in_pr : integer range 0 to 511;
+	--	variable tmp_g : integer range 0 to 8191;
+		
 	
 	begin
-
 		if rising_edge(CLKPIXEL) then
-			-- create output signals
+		
+			-- create syncs
 			if x<h_sync then
 				adv7513_hs <= '1';
 			else
 				adv7513_hs <= '0';
 			end if;
-			if y>=v_fp and y<v_fp+v_sync then
+			if y<v_sync then
 				adv7513_vs <= '1';
 			else
 				adv7513_vs <= '0';
 			end if;
 			
-			if   x>=h_sync+h_bp and x<h_sync+h_bp+h_img 
-			and  y>=v_fp+v_sync+v_bp -- and y<v_fp+v_sync+v_bp+v_img 
+			if   x<h_sync+h_bp or x>=h_sync+h_bp+h_img 
+			or   y<v_sync+v_bp or y>=v_sync+v_bp+v_img 
+			-- outside visible range
 			then
-				adv7513_de <= '1';
-				
---				if x=h_sync+h_bp or y=v_fp+v_sync+v_bp or x=h_sync+h_bp+h_img-1 or y=v_fp+v_sync+v_bp+v_img-1 then
---					adv7513_d <= "111111111111111111111111";
---				else
-					-- compute output green
-					tmp_g := 4096
-					       + in_y * 8 
-					       + 256 * 6
-							 - in_pb * 6        
-							 + 256 * 4
-							 - in_pr * 4;       
-					if tmp_g<4096 then 
-						adv7513_d(23 downto 16) <= "00000000";
-					elsif tmp_g>=4096+255*4 then
-						adv7513_d(15 downto 8) <= "11111111";
-					else
-						adv7513_d(15 downto 8) <= std_logic_vector(to_unsigned((tmp_g-4096)/4,8));
-					end if;
-               -- compute output blue
-					if in_y+in_pb > 256+127 then
-						adv7513_d(7 downto 0) <= "11111111";
-					elsif in_y+in_pb < 256 then
-						adv7513_d(7 downto 0) <= "00000000";
-					else
-						adv7513_d(7 downto 0) <= std_logic_vector(to_unsigned((in_y+in_pb-256)*2,8));
-					end if;
-					-- compute output red
-					if in_y+in_pr > 256+127 then
-						adv7513_d(23 downto 16) <= "11111111";
-					elsif in_y+in_pr < 256 then
-						adv7513_d(23 downto 16) <= "00000000";
-					else
-						adv7513_d(23 downto 16) <= std_logic_vector(to_unsigned((in_y+in_pr-256)*2,8));
-					end if;					
---				end if;		
-				
-			else
 				adv7513_de <= '0';
 				adv7513_d <= "000000000000000000000000";
+			-- cropped because no analog signal there
+			elsif x>=h_sync+h_bp+h_img-40 then
+				adv7513_de <= '1';
+				adv7513_d <= "000000000000000000000000";			
+			-- visible 
+			else
+				adv7513_de <= '1';
+				adv7513_d <= bufferq;
 			end if;
 			
-			-- from where to read next data
-			bufferrdaddress <= (not EVENLINE) & std_logic_vector(to_unsigned(x+2-(h_sync+h_bp),11));
-			
+
 			-- progress counters
-			if x<w-1 and HSYNC='1' then
+			if QUARTERLINEBEGIN then
+				x := h_sync+h_bp+h_img+h_fp/2;
+				if FIRSTLINEBEGIN then
+					y := v_sync+v_bp+v_img+v_fp-1-4;
+				end if;
+			elsif x<h_sync+h_bp+h_img+h_fp-1 then
 				x:=x+1;
 			else
-				if x>w/2 then
---					if y=263*4-1 then
---						y:=0;
-					if y>100 and VSYNC='0' then
-						y := 0;
-					else
-						y := y+1;
-					end if;
---					if y>50 and VSYNC='0' then
---						y := 0;
---					elsif y<263*4-1 then
---						y := y+1;
---					else
---						y := y+1;
---					end if;
+				x := 0;
+				if y<v_sync+v_bp+v_img+v_fp-1 then
+					y := y+1;
+				else
+					y := 0;
 				end if;
-				x:= 0;
 			end if;
-			
---			if HSYNC='0' then
---				w := inputlinetime / 4;
---				inputlinetime := 0;
---			else
---				inputlinetime := inputlinetime+1;
---			end if;
-			
-			-- take into registers and scale   (in_pb/in_pr having 256 as 0-point)
-			in_y := to_integer(unsigned(bufferq(23 downto 16)));
-			if in_y<70 then 
-				in_y:=0;
-			else
-				in_y:=(in_y-70);
-			end if;
-			in_pb := 256 - to_integer(unsigned(PB_IDLE)) + to_integer(unsigned(bufferq(15 downto 8)));
-			in_pr := 256 - to_integer(unsigned(PR_IDLE)) + to_integer(unsigned(bufferq(7 downto 0)));
 		end if;
+
+		-- determine from which address to fetch next pixel
+		bufferrdaddress <= x + 150 + 2048*((y/4) mod 2);
 			
 	end process;
 	
