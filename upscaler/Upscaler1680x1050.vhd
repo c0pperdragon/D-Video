@@ -99,10 +99,11 @@ signal SAMPLEDELAY : integer range 0 to 7;
 
 signal QUARTERLINEBEGIN : boolean;
 signal FIRSTLINEBEGIN : boolean;
+signal VERTICALSHIFT : integer range 0 to 1;
 
-signal bufferwraddress : integer range 0 to 4095;
+signal bufferwraddress : integer range 0 to 8191;
 signal bufferwrdata : std_logic_vector(23 downto 0);
-signal bufferrdaddress : integer range 0 to 4095;
+signal bufferrdaddress : integer range 0 to 8191;
 signal bufferq : std_logic_vector(23 downto 0);
 		
 begin		
@@ -111,11 +112,11 @@ begin
 	configurator: ConfigureADV7513 port map 
 		( CLK50, adv7513_scl, adv7513_sda, open);
 
-	linebuffer : ram_dual generic map(data_width => 24, addr_width => 12)
+	linebuffer : ram_dual generic map(data_width => 24, addr_width => 13)
 		port map (
 			bufferwrdata,
-			std_logic_vector(to_unsigned(bufferrdaddress,12)),
-			std_logic_vector(to_unsigned(bufferwraddress,12)),
+			std_logic_vector(to_unsigned(bufferrdaddress,13)),
+			std_logic_vector(to_unsigned(bufferwraddress,13)),
 			'1',
 			CLOCK0,
 			CLOCK0,
@@ -196,7 +197,6 @@ begin
 			
 		-- combine staggered signals
 		ENCODE <= x(0) or x(1) or x(2) or x(3) or x(4) or x(5) or x(6) or x(7);	
---		ENCODE <= SAMPLETRIGGER;
 	end process;
 	
 	------ input sampling ---
@@ -210,6 +210,7 @@ begin
 		variable y : integer range 0 to 511;
 		variable prevx4 : integer range 0 to 8191;
 		variable synclowtime : integer range 0 to 8191;
+		variable shiftedframe : boolean;
 				
 		variable scaled_r : integer range 0 to 255;
 		variable scaled_g : integer range 0 to 255;
@@ -242,17 +243,24 @@ begin
 				SAMPLETRIGGER <= '0';
 			end if;			
 			
-			-- generate the sync pulses to lock the HDMI output to
+			-- generate the sync pulses to lock the HDMI output to the input
 			QUARTERLINEBEGIN <= x4=0 or x4=prevx4/4 or x4=prevx4/2 or x4=prevx4/2+prevx4/4;			
-			FIRSTLINEBEGIN <= x4=0 and y=10;
+			FIRSTLINEBEGIN <= (y=15) and ((x4=0 and not shiftedframe) or (x4=prevx4/2 and shiftedframe));
 			
-			-- progress counters according to sync 
+			-- Progress counters according to sync 
 			-- detect falling edge of csync (only accept if in approximately correct place)
+			-- Also check if the frame should be shifted by half a line (for interlace)
 			if SYNCHISTORY(7)='0' and prev_csync='1' and x4>=7000 then
-				if synclowtime>4000 then
+				if synclowtime>6000 then
 					y := 0;
-				elsif y<511 then
-					y := y+1;
+					shiftedframe := false;
+				else
+					if y<511 then
+						y := y+1;
+					end if;
+					if synclowtime>3000 then
+						shiftedframe := true;
+					end if;
 				end if;
 				synclowtime := 0;
 				prevx4 := x4;
@@ -287,11 +295,14 @@ begin
 		end if;
 		
 		-- determine where to write next pixel to and what to write
-		bufferwraddress <= (x4/4) + 2048*(y mod 2);
+		bufferwraddress <= (x4/4) + 2048*(y mod 4);
 		bufferwrdata <= std_logic_vector(to_unsigned(scaled_r,8))
 			& std_logic_vector(to_unsigned(scaled_g,8))
 			& std_logic_vector(to_unsigned(scaled_b,8));
-		
+			
+		-- notify HDMI output about interlacing
+		VERTICALSHIFT <= 0;
+		if shiftedframe then VERTICALSHIFT <= 1; end if;
 	end process;
 
 	
@@ -351,7 +362,7 @@ begin
 			if QUARTERLINEBEGIN then
 				x := h_sync+h_bp+h_img+h_fp/2;
 				if FIRSTLINEBEGIN then
-					y := v_sync+v_bp+v_img+v_fp-1-4;
+					y := v_sync+v_bp+v_img+v_fp-1;
 				end if;
 			elsif x<h_sync+h_bp+h_img+h_fp-1 then
 				x:=x+1;
@@ -366,7 +377,7 @@ begin
 		end if;
 
 		-- determine from which address to fetch next pixel
-		bufferrdaddress <= x + 150 + 2048*((y/4) mod 2);
+		bufferrdaddress <= x + 150 + 2048*(((y+VERTICALSHIFT*2)/4) mod 4);
 			
 	end process;
 
