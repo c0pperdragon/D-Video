@@ -47,11 +47,14 @@ end entity;
 
 architecture immediate of Upscaler1680x1050 is
 
-component PLL120 is
+component PLL120x4 is
 PORT
 	(
-		inclk0: IN STD_LOGIC  := '0';
-		c0		: OUT STD_LOGIC 
+		inclk0: IN STD_LOGIC;
+		c0		: OUT STD_LOGIC ;
+		c1		: OUT STD_LOGIC ;
+		c2		: OUT STD_LOGIC ;
+		c3		: OUT STD_LOGIC 
 	);
 end component;
 
@@ -83,7 +86,16 @@ component ram_dual is
 end component;
 	
 	
-signal CLKPIXEL    : std_logic;
+-- 4 phase shifted clocks running at 120Mhz. 
+-- when using both edges, the 120 mhz can be sliced to 8 parts.
+signal CLOCK0 : std_logic;    -- 120 MHz
+signal CLOCK1 : std_logic;    -- 120 MHz, 1.04 ns late
+signal CLOCK2 : std_logic;    -- 120 MHz, 2.08 ns late
+signal CLOCK3 : std_logic;    -- 120 MHz, 3,12 ns late
+
+signal SYNCHISTORY : std_logic_vector(7 downto 0); -- higher index means later sample time
+signal SAMPLETRIGGER : std_logic;
+signal SAMPLEDELAY : integer range 0 to 7;
 
 signal QUARTERLINEBEGIN : boolean;
 signal FIRSTLINEBEGIN : boolean;
@@ -94,7 +106,7 @@ signal bufferrdaddress : integer range 0 to 4095;
 signal bufferq : std_logic_vector(23 downto 0);
 		
 begin		
-	pixelclockgenerator: PLL120 port map ( CLK50, CLKPIXEL );
+	pixelclockgenerator: PLL120x4 port map ( CLK50, CLOCK0, CLOCK1, CLOCK2, CLOCK3 );
 	
 	configurator: ConfigureADV7513 port map 
 		( CLK50, adv7513_scl, adv7513_sda, open);
@@ -105,15 +117,90 @@ begin
 			std_logic_vector(to_unsigned(bufferrdaddress,12)),
 			std_logic_vector(to_unsigned(bufferwraddress,12)),
 			'1',
-			CLKPIXEL,
-			CLKPIXEL,
+			CLOCK0,
+			CLOCK0,
 			bufferq		
 		);
 	
 
+	-- Sample the CSYNC signal at different points and produce a 
+	-- history vector. This output is synchronized with the main clock (CLOCK0)
+	process (CLOCK0,CLOCK1,CLOCK2,CLOCK3)
+		variable a : std_logic_vector(7 downto 0); -- to take the sample at 8 different times
+		variable b : std_logic_vector(7 downto 0); -- to collect for use at a required output time
+	begin
+		if rising_edge(CLOCK0) then 
+			SYNCHISTORY <= b; 
+			b(3 downto 0) := a(3 downto 0);
+			a(0) := CSYNC;
+		end if;
+		if rising_edge(CLOCK1) then 
+			a(1) := CSYNC; 
+		end if;
+		if rising_edge(CLOCK2) then 
+			a(2) := CSYNC; 
+		end if;
+		if rising_edge(CLOCK3) then 
+			a(3) := CSYNC; 
+		end if;
+		if falling_edge(CLOCK0) then 
+			b(7 downto 4) := a(7 downto 4);
+			a(4) := CSYNC; 
+		end if;
+		if falling_edge(CLOCK1) then 
+			a(5) := CSYNC; 
+		end if;
+		if falling_edge(CLOCK2) then 
+			a(6) := CSYNC; 
+		end if;
+		if falling_edge(CLOCK3) then 
+			a(7) := CSYNC; 
+		end if;			
+	end process;
+	
+	-- produce an ENCODE output that is a variably delayed copy of 
+	-- SAMPLETRIGGER (which is synchronious to CLOCK0)
+	process (CLOCK0, CLOCK1, CLOCK2, CLOCK3, SAMPLETRIGGER)
+		variable a : std_logic_vector(7 downto 0); -- prepare individual bits for the delay output
+		variable b : std_logic_vector(7 downto 0); -- keep data longer if needed 	
+		variable x : std_logic_vector(7 downto 0); -- delayed flip-flops when are then combined asynchronously
+	begin
+		-- take prepared data into the flip-flops at the correct time
+		if falling_edge(CLOCK0) then
+			x(0) := a(0); 
+			b := a;
+		end if;
+		if falling_edge(CLOCK1) then 
+			x(1) := a(1); 
+		end if;
+		if falling_edge(CLOCK2) then 
+			x(2) := a(2); 
+		end if;
+		if falling_edge(CLOCK3) then 
+			x(3) := a(3); 
+		end if;			
+		if rising_edge(CLOCK0) then 
+			x(4) := b(4); 
+			a := "00000000";
+			a(SAMPLEDELAY) := SAMPLETRIGGER;
+		end if;
+		if rising_edge(CLOCK1) then 
+			x(5) := b(5); 
+		end if;
+		if rising_edge(CLOCK2) then 
+			x(6) := b(6); 
+		end if;
+		if rising_edge(CLOCK3) then 
+			x(7) := b(7); 
+		end if;
+			
+		-- combine staggered signals
+		ENCODE <= x(0) or x(1) or x(2) or x(3) or x(4) or x(5) or x(6) or x(7);	
+--		ENCODE <= SAMPLETRIGGER;
+	end process;
+	
 	------ input sampling ---
-	process (CLKPIXEL)
-		variable in_csync : std_logic;
+	process (CLOCK0)
 		variable prev_csync : std_logic;
 		variable in_r : integer range 0 to 255;
 		variable in_g : integer range 0 to 255;
@@ -127,10 +214,11 @@ begin
 		variable scaled_r : integer range 0 to 255;
 		variable scaled_g : integer range 0 to 255;
 		variable scaled_b : integer range 0 to 255;
+		
 		constant darkest : integer := 20;
 		constant lightest : integer := 190;
 	begin
-		if rising_edge(CLKPIXEL) then
+		if rising_edge(CLOCK0) then
 			-- take sample at correct phase and adjust colors
 			if x4 mod 4 = 0 then
 					if in_r<darkest then scaled_r:=0; 
@@ -147,11 +235,11 @@ begin
 					end if;
 			end if;
 						
-			-- emit follow-up encode pulses for the ADCs 
-			if x4 mod 4 = 0 then
-				ENCODE <= '1';
-			elsif x4 mod 4 = 2 then
-				ENCODE <= '0';
+			-- emit encode pulses for the ADCs 
+			if x4 mod 4 = 1 then
+				SAMPLETRIGGER <= '1';
+			elsif x4 mod 4 = 3 then
+				SAMPLETRIGGER <= '0';
 			end if;			
 			
 			-- generate the sync pulses to lock the HDMI output to
@@ -160,7 +248,7 @@ begin
 			
 			-- progress counters according to sync 
 			-- detect falling edge of csync (only accept if in approximately correct place)
-			if in_csync='0' and prev_csync='1' and x4>=7000 then
+			if SYNCHISTORY(7)='0' and prev_csync='1' and x4>=7000 then
 				if synclowtime>4000 then
 					y := 0;
 				elsif y<511 then
@@ -169,20 +257,30 @@ begin
 				synclowtime := 0;
 				prevx4 := x4;
 				x4 := 0;
+			
+				-- compute the sample delay from the csync history
+				if SYNCHISTORY(6)='1' then SAMPLEDELAY <= 6; 
+				elsif SYNCHISTORY(5)='1' then SAMPLEDELAY <= 5;
+				elsif SYNCHISTORY(4)='1' then SAMPLEDELAY <= 4;
+				elsif SYNCHISTORY(3)='1' then SAMPLEDELAY <= 3;
+				elsif SYNCHISTORY(2)='1' then SAMPLEDELAY <= 2;
+				elsif SYNCHISTORY(1)='1' then SAMPLEDELAY <= 1;
+				elsif SYNCHISTORY(0)='1' then SAMPLEDELAY <= 0;
+				else SAMPLEDELAY <= 7; end if;
+			
 			else
 				-- keep track of how much time the csync was low (to detect a vsync)
-				if in_csync='0' and synclowtime<8191 then
+				if SYNCHISTORY(7)='0' and synclowtime<8191 then
 					synclowtime := synclowtime+1;
 				end if;
 				-- normal x counter progressing
 				if x4<8191 then 
 					x4 := x4+1;
-				end if;
+            end if;
 			end if;
 			
 			-- registered input
-			prev_csync := in_csync;
-			in_csync := CSYNC;
+			prev_csync := SYNCHISTORY(7);
 			in_r := to_integer(unsigned(R));
 			in_g := to_integer(unsigned(G));
 			in_b := to_integer(unsigned(B));
@@ -198,13 +296,13 @@ begin
 
 	
 	------- forward the pixel clock to the HDMI transmitter 
-	process (CLKPIXEL)
+	process (CLOCK0)
 	begin
-      adv7513_clk <= CLKPIXEL;
+      adv7513_clk <= CLOCK0;
 	end process;
 	
 	------- pixel output generation 
-	process (CLKPIXEL) 
+	process (CLOCK0) 
 	
 		constant h_sync : integer := 44;
 		constant h_bp :   integer := 64;
@@ -214,22 +312,12 @@ begin
 		constant v_sync : integer := 8;
 		constant v_bp :   integer := 64;
 		constant v_img :  integer := 1050;
-		constant v_fp :   integer := 126 + 500; -- need external sync for proper frame
+		constant v_fp :   integer := 500; -- need external sync for proper frame
 		
 		variable x:integer range 0 to 2047:= 0;  
-		variable y:integer range 0 to 2047:= 0;  	
-
-	--	variable inputlinetime : integer range 0 to 16383;
-	--	constant w : integer range 0 to 4095 := 2256;
-		
-	--	variable in_y : integer range 0 to 511;
-	--	variable in_pb : integer range 0 to 511;
-	--	variable in_pr : integer range 0 to 511;
-	--	variable tmp_g : integer range 0 to 8191;
-		
-	
+		variable y:integer range 0 to 2047:= 0;  		
 	begin
-		if rising_edge(CLKPIXEL) then
+		if rising_edge(CLOCK0) then
 		
 			-- create syncs
 			if x<h_sync then
@@ -258,7 +346,6 @@ begin
 				adv7513_de <= '1';
 				adv7513_d <= bufferq;
 			end if;
-			
 
 			-- progress counters
 			if QUARTERLINEBEGIN then
@@ -282,10 +369,6 @@ begin
 		bufferrdaddress <= x + 150 + 2048*((y/4) mod 2);
 			
 	end process;
-	
-
-	
-	
 
 end immediate;
 
