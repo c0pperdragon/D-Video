@@ -164,15 +164,15 @@ BEGIN
 		clk1_divide_by => 5,
 		clk1_duty_cycle => 50,
 		clk1_multiply_by => 12,
-		clk1_phase_shift => "-1042",
+		clk1_phase_shift => "1042",
 		clk2_divide_by => 5,
 		clk2_duty_cycle => 50,
 		clk2_multiply_by => 12,
-		clk2_phase_shift => "-2083",
+		clk2_phase_shift => "2083",
 		clk3_divide_by => 5,
 		clk3_duty_cycle => 50,
 		clk3_multiply_by => 12,
-		clk3_phase_shift => "-3125",
+		clk3_phase_shift => "3125",
 		compensate_clock => "CLK0",
 		inclk0_input_frequency => 20000,
 		intended_device_family => "MAX 10",
@@ -311,9 +311,9 @@ END SYN;
 -- Retrieval info: PRIVATE: PHASE_RECONFIG_FEATURE_ENABLED STRING "1"
 -- Retrieval info: PRIVATE: PHASE_RECONFIG_INPUTS_CHECK STRING "0"
 -- Retrieval info: PRIVATE: PHASE_SHIFT0 STRING "0.00000000"
--- Retrieval info: PRIVATE: PHASE_SHIFT1 STRING "-45.00000000"
--- Retrieval info: PRIVATE: PHASE_SHIFT2 STRING "-90.00000000"
--- Retrieval info: PRIVATE: PHASE_SHIFT3 STRING "-135.00000000"
+-- Retrieval info: PRIVATE: PHASE_SHIFT1 STRING "45.00000000"
+-- Retrieval info: PRIVATE: PHASE_SHIFT2 STRING "90.00000000"
+-- Retrieval info: PRIVATE: PHASE_SHIFT3 STRING "135.00000000"
 -- Retrieval info: PRIVATE: PHASE_SHIFT_STEP_ENABLED_CHECK STRING "0"
 -- Retrieval info: PRIVATE: PHASE_SHIFT_UNIT0 STRING "deg"
 -- Retrieval info: PRIVATE: PHASE_SHIFT_UNIT1 STRING "deg"
@@ -367,15 +367,15 @@ END SYN;
 -- Retrieval info: CONSTANT: CLK1_DIVIDE_BY NUMERIC "5"
 -- Retrieval info: CONSTANT: CLK1_DUTY_CYCLE NUMERIC "50"
 -- Retrieval info: CONSTANT: CLK1_MULTIPLY_BY NUMERIC "12"
--- Retrieval info: CONSTANT: CLK1_PHASE_SHIFT STRING "-1042"
+-- Retrieval info: CONSTANT: CLK1_PHASE_SHIFT STRING "1042"
 -- Retrieval info: CONSTANT: CLK2_DIVIDE_BY NUMERIC "5"
 -- Retrieval info: CONSTANT: CLK2_DUTY_CYCLE NUMERIC "50"
 -- Retrieval info: CONSTANT: CLK2_MULTIPLY_BY NUMERIC "12"
--- Retrieval info: CONSTANT: CLK2_PHASE_SHIFT STRING "-2083"
+-- Retrieval info: CONSTANT: CLK2_PHASE_SHIFT STRING "2083"
 -- Retrieval info: CONSTANT: CLK3_DIVIDE_BY NUMERIC "5"
 -- Retrieval info: CONSTANT: CLK3_DUTY_CYCLE NUMERIC "50"
 -- Retrieval info: CONSTANT: CLK3_MULTIPLY_BY NUMERIC "12"
--- Retrieval info: CONSTANT: CLK3_PHASE_SHIFT STRING "-3125"
+-- Retrieval info: CONSTANT: CLK3_PHASE_SHIFT STRING "3125"
 -- Retrieval info: CONSTANT: COMPENSATE_CLOCK STRING "CLK0"
 -- Retrieval info: CONSTANT: INCLK0_INPUT_FREQUENCY NUMERIC "20000"
 -- Retrieval info: CONSTANT: INTENDED_DEVICE_FAMILY STRING "MAX 10"

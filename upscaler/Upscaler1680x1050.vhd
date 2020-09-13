@@ -192,7 +192,7 @@ begin
 			x(6) := b(6); 
 		end if;
 		if rising_edge(CLOCK3) then 
-			x(7) := b(7); 
+			x(7) := b(7);  
 		end if;
 			
 		-- combine staggered signals
@@ -206,6 +206,7 @@ begin
 		variable in_g : integer range 0 to 255;
 		variable in_b : integer range 0 to 255;
 
+		variable triggercounter : integer range 0 to 3;
 		variable x4 : integer range 0 to 8191;
 		variable y : integer range 0 to 511;
 		variable prevx4 : integer range 0 to 8191;
@@ -221,6 +222,9 @@ begin
 	begin
 		if rising_edge(CLOCK0) then
 			-- take sample at correct phase and adjust colors
+			-- this will only work correctly when there was only one normal sync pulse in the line
+			-- for lines with vsync or short syncs, this timing will be off for the second half
+			-- of the line, but as there is no image there anyway, it will not matter
 			if x4 mod 4 = 0 then
 					if in_r<darkest then scaled_r:=0; 
 					elsif in_r>lightest then scaled_r:=255;
@@ -235,20 +239,36 @@ begin
 					else scaled_b := (in_b-darkest) + (in_b-darkest)/2;
 					end if;
 			end if;
-						
-			-- emit encode pulses for the ADCs 
-			if x4 mod 4 = 1 then
-				SAMPLETRIGGER <= '1';
-			elsif x4 mod 4 = 3 then
-				SAMPLETRIGGER <= '0';
-			end if;			
-			
+									
 			-- generate the sync pulses to lock the HDMI output to the input
 			QUARTERLINEBEGIN <= x4=0 or x4=prevx4/4 or x4=prevx4/2 or x4=prevx4/2+prevx4/4;			
 			FIRSTLINEBEGIN <= (y=15) and ((x4=0 and not shiftedframe) or (x4=prevx4/2 and shiftedframe));
+
+			-- adjust sample delay and trigger to fit the sync edge as closely as possible
+			if SYNCHISTORY(7)='0' and prev_csync='1' then
+				if SYNCHISTORY(6)='1' then SAMPLEDELAY <= 7; 
+				elsif SYNCHISTORY(5)='1' then SAMPLEDELAY <= 6;
+				elsif SYNCHISTORY(4)='1' then SAMPLEDELAY <= 5;
+				elsif SYNCHISTORY(3)='1' then SAMPLEDELAY <= 4;
+				elsif SYNCHISTORY(2)='1' then SAMPLEDELAY <= 3;
+				elsif SYNCHISTORY(1)='1' then SAMPLEDELAY <= 2;
+				elsif SYNCHISTORY(0)='1' then SAMPLEDELAY <= 1;
+				else SAMPLEDELAY <= 0; end if;				
+				triggercounter := 0;
+			elsif triggercounter = 0 then
+				triggercounter := 1;
+				SAMPLETRIGGER <= '0';
+			elsif triggercounter = 1 then
+				triggercounter := 2;
+			elsif triggercounter = 2 then
+				triggercounter := 3;
+				SAMPLETRIGGER <= '1';
+			else
+				triggercounter := 0;
+			end if;
 			
 			-- Progress counters according to sync 
-			-- detect falling edge of csync (only accept if in approximately correct place)
+			-- Only accept falling sync edge if not comming too early.
 			-- Also check if the frame should be shifted by half a line (for interlace)
 			if SYNCHISTORY(7)='0' and prev_csync='1' and x4>=7000 then
 				if synclowtime>6000 then
@@ -265,17 +285,6 @@ begin
 				synclowtime := 0;
 				prevx4 := x4;
 				x4 := 0;
-			
-				-- compute the sample delay from the csync history
-				if SYNCHISTORY(6)='1' then SAMPLEDELAY <= 6; 
-				elsif SYNCHISTORY(5)='1' then SAMPLEDELAY <= 5;
-				elsif SYNCHISTORY(4)='1' then SAMPLEDELAY <= 4;
-				elsif SYNCHISTORY(3)='1' then SAMPLEDELAY <= 3;
-				elsif SYNCHISTORY(2)='1' then SAMPLEDELAY <= 2;
-				elsif SYNCHISTORY(1)='1' then SAMPLEDELAY <= 1;
-				elsif SYNCHISTORY(0)='1' then SAMPLEDELAY <= 0;
-				else SAMPLEDELAY <= 7; end if;
-			
 			else
 				-- keep track of how much time the csync was low (to detect a vsync)
 				if SYNCHISTORY(7)='0' and synclowtime<8191 then
@@ -313,7 +322,7 @@ begin
 	end process;
 	
 	------- pixel output generation 
-	process (CLOCK0) 
+	process (CLOCK0, VERTICALSHIFT) 
 	
 		constant h_sync : integer := 44;
 		constant h_bp :   integer := 64;
@@ -328,7 +337,7 @@ begin
 		variable x:integer range 0 to 2047:= 0;  
 		variable y:integer range 0 to 2047:= 0;  		
 	begin
-		if rising_edge(CLOCK0) then
+		if rising_edge(CLOCK0) then 
 		
 			-- create syncs
 			if x<h_sync then
