@@ -13,7 +13,7 @@ Connector pin               MAX 10 pin       ADC extension
 9             GPIO7         12               R1
 10            GPIO8         13               R0
 11            GPIO9         10               CSYNC
-12            GPIO10        11               n.c.
+12            GPIO10        11               NORMALIZE
 13            GPIO11        7                G7
 14            GPIO12        8                G6
 15            GPIO13        141              G5

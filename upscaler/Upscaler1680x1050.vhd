@@ -34,13 +34,17 @@ entity Upscaler1680x1050 is
       adv7513_de : out std_logic;
 		
 		-- ADC interface
-		R : in std_logic_vector(7 downto 0);
-		G : in std_logic_vector(7 downto 0);
-		B : in std_logic_vector(7 downto 0);
+		R : in std_logic_vector(7 downto 0);   --  Y in YPbPr mode
+		G : in std_logic_vector(7 downto 0);   -- Pb in YPbPr mode
+		B : in std_logic_vector(7 downto 0);   -- Pr in YPbPr mode
 		ENCODE : out std_logic;
+		NORMALIZE : out std_logic;
 		
 		-- CSYNC signal (not through ADCs)
-		CSYNC : in std_logic
+		CSYNC : in std_logic;
+		
+		-- mode switch
+		USE_YPBPR : in std_logic
 	);	
 end entity;
 
@@ -124,6 +128,18 @@ begin
 		);
 	
 
+	-- create the NORMALIZE output while csync is active in YPbPr mode
+	process (CLOCK0, USE_YPBPR)
+	begin
+		if rising_edge(CLOCK0) then
+			if SYNCHISTORY="00000000" and USE_YPBPR='1' then
+				NORMALIZE <= '1';
+			else
+				NORMALIZE <= '0';
+			end if;
+		end if;
+	end process;
+	
 	-- Sample the CSYNC signal at different points and produce a 
 	-- history vector. This output is synchronized with the main clock (CLOCK0)
 	process (CLOCK0,CLOCK1,CLOCK2,CLOCK3)
@@ -212,6 +228,7 @@ begin
 		variable prevx4 : integer range 0 to 8191;
 		variable synclowtime : integer range 0 to 8191;
 		variable shiftedframe : boolean;
+		variable tmp : integer range -512 to 511;
 				
 		variable scaled_r : integer range 0 to 255;
 		variable scaled_g : integer range 0 to 255;
@@ -219,6 +236,8 @@ begin
 		
 		constant darkest : integer := 20;
 		constant lightest : integer := 190;
+		constant synctip : integer := 58;
+		constant pbprzero : integer := 153;
 	begin
 		if rising_edge(CLOCK0) then
 			-- take sample at correct phase and adjust colors
@@ -226,6 +245,8 @@ begin
 			-- for lines with vsync or short syncs, this timing will be off for the second half
 			-- of the line, but as there is no image there anyway, it will not matter
 			if x4 mod 4 = 0 then
+				-- straight-forward RGB mode (use some scaling)
+				if USE_YPBPR='0' then
 					if in_r<darkest then scaled_r:=0; 
 					elsif in_r>lightest then scaled_r:=255;
 					else scaled_r := (in_r-darkest) + (in_r-darkest)/2;
@@ -238,6 +259,26 @@ begin
 					elsif in_b>lightest then scaled_b:=255;
 					else scaled_b := (in_b-darkest) + (in_b-darkest)/2;
 					end if;
+				else
+				-- YPbPr mode 
+					tmp := in_r + in_b - (synctip + pbprzero);
+					if tmp<darkest then scaled_r := 0; 
+					elsif tmp>lightest then scaled_r := 255;
+					else scaled_r := (tmp - darkest) + (tmp-darkest)/2;
+					end if;
+					
+					tmp := in_r + in_g - (synctip + pbprzero);
+					if tmp<darkest then scaled_b := 0;
+					elsif tmp>lightest then scaled_b := 255;
+					else scaled_b := (tmp - darkest) + (tmp-darkest)/2;
+					end if;
+					
+					tmp := in_r - synctip + (pbprzero*3)/8 - (in_g/4) - (in_b/8);
+					if tmp<darkest then scaled_g := 0;
+					elsif tmp>lightest then scaled_g := 255;
+					else scaled_g := (tmp - darkest) + (tmp-darkest)/2;
+					end if;
+				end if;
 			end if;
 									
 			-- generate the sync pulses to lock the HDMI output to the input
