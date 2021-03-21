@@ -228,16 +228,20 @@ begin
 		variable prevx4 : integer range 0 to 8191;
 		variable synclowtime : integer range 0 to 8191;
 		variable shiftedframe : boolean;
-		variable tmp : integer range -512 to 511;
-				
+		
 		variable scaled_r : integer range 0 to 255;
 		variable scaled_g : integer range 0 to 255;
 		variable scaled_b : integer range 0 to 255;
 		
-		constant darkest : integer := 20;
-		constant lightest : integer := 190;
-		constant synctip : integer := 58;
-		constant pbprzero : integer := 153;
+		variable tmp_r : integer range -512 to 511;
+		variable tmp_g : integer range -512 to 511;
+		variable tmp_b : integer range -512 to 511;
+		
+		constant darkest : integer := 20;   -- darkest DAC level of RGB channels
+		constant synctip : integer := 73;   -- black DAC level on channel with sync tip
+		constant pbzero : integer := 151;   -- zero level for pb signal
+		constant przero : integer := 156;   -- zero level for pr signal
+		
 	begin
 		if rising_edge(CLOCK0) then
 			-- take sample at correct phase and adjust colors
@@ -245,41 +249,40 @@ begin
 			-- for lines with vsync or short syncs, this timing will be off for the second half
 			-- of the line, but as there is no image there anyway, it will not matter
 			if x4 mod 4 = 0 then
-				-- straight-forward RGB mode (use some scaling)
+				-- do clipping and and additional scaling of rgb channels
+				if tmp_r<0 then scaled_r:=0; 
+				elsif tmp_r>170 then scaled_r:=255;
+				else scaled_r := tmp_r + tmp_r/2;
+				end if;
+				if tmp_g<0 then scaled_g:=0; 
+				elsif tmp_g>170 then scaled_g:=255;
+				else scaled_g := tmp_g + tmp_g/2;
+				end if;
+				if tmp_b<0 then scaled_b:=0; 
+				elsif tmp_b>170 then scaled_b:=255;
+				else scaled_b := tmp_b + tmp_b/2;
+				end if;
+				
+				-- pipelined operation to get rgb channels
+				-- straight RGB mode
 				if USE_YPBPR='0' then
-					if in_r<darkest then scaled_r:=0; 
-					elsif in_r>lightest then scaled_r:=255;
-					else scaled_r := (in_r-darkest) + (in_r-darkest)/2;
-					end if;
-					if in_g<darkest then scaled_g:=0; 
-					elsif in_g>lightest then scaled_g:=255;
-					else scaled_g := (in_g-darkest) + (in_g-darkest)/2;
-					end if;
-					if in_b<darkest then scaled_b:=0; 
-					elsif in_b>lightest then scaled_b:=255;
-					else scaled_b := (in_b-darkest) + (in_b-darkest)/2;
-					end if;
-				else
+					tmp_r := in_r - darkest;
+					tmp_g := in_g - darkest;
+					tmp_b := in_b - darkest;
 				-- YPbPr mode 
-					tmp := in_r + in_b - (synctip + pbprzero);
-					if tmp<darkest then scaled_r := 0; 
-					elsif tmp>lightest then scaled_r := 255;
-					else scaled_r := (tmp - darkest) + (tmp-darkest)/2;
-					end if;
-					
-					tmp := in_r + in_g - (synctip + pbprzero);
-					if tmp<darkest then scaled_b := 0;
-					elsif tmp>lightest then scaled_b := 255;
-					else scaled_b := (tmp - darkest) + (tmp-darkest)/2;
-					end if;
-					
-					tmp := in_r - synctip + (pbprzero*3)/8 - (in_g/4) - (in_b/8);
-					if tmp<darkest then scaled_g := 0;
-					elsif tmp>lightest then scaled_g := 255;
-					else scaled_g := (tmp - darkest) + (tmp-darkest)/2;
-					end if;
+				else
+					-- do pipelined YPbPr computation  (in_r = Y, in_g = Pb, in_b = Pr)
+					tmp_r := in_r - synctip + in_b - przero;
+					tmp_g := in_r - synctip + (pbzero*13/128) + (przero*38/128) - (in_g*13/128) - (in_b*38/128);
+					tmp_b := in_r - synctip + in_g - pbzero;					
+--					if x4<2400 then
+--						tmp_r := in_r - synctip;
+--						tmp_g := in_r - synctip;
+--						tmp_b := in_r - synctip;
+--					end if;
 				end if;
 			end if;
+			
 									
 			-- generate the sync pulses to lock the HDMI output to the input
 			QUARTERLINEBEGIN <= x4=0 or x4=prevx4/4 or x4=prevx4/2 or x4=prevx4/2+prevx4/4;			
