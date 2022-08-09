@@ -39,10 +39,10 @@
 
 set_global_assignment -name FAMILY "MAX 10"
 set_global_assignment -name DEVICE 10M08SCE144C8G
-set_global_assignment -name TOP_LEVEL_ENTITY TestImage1680x1050
+set_global_assignment -name TOP_LEVEL_ENTITY TestImage1080p
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 16.0.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "15:30:39  MARCH 03, 2017"
-set_global_assignment -name LAST_QUARTUS_VERSION "18.0.0 Lite Edition"
+set_global_assignment -name LAST_QUARTUS_VERSION "18.1.0 Lite Edition"
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR 256
 set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (VHDL)"
@@ -55,7 +55,6 @@ set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 set_global_assignment -name FLOW_ENABLE_POWER_ANALYZER ON
 set_global_assignment -name POWER_DEFAULT_INPUT_IO_TOGGLE_RATE "12.5 %"
 set_location_assignment PIN_88 -to CLK50
-set_location_assignment PIN_27 -to adv7513_spdif
 set_location_assignment PIN_28 -to adv7513_vs
 set_location_assignment PIN_29 -to adv7513_hs
 set_location_assignment PIN_30 -to adv7513_de
@@ -86,7 +85,7 @@ set_location_assignment PIN_65 -to adv7513_d[22]
 set_location_assignment PIN_66 -to adv7513_d[23]
 set_location_assignment PIN_69 -to adv7513_sda
 set_location_assignment PIN_70 -to adv7513_scl
-set_location_assignment PIN_130 -to CLKADC
+set_global_assignment -name VHDL_FILE TestImage1280x1024.vhd
 set_global_assignment -name VHDL_FILE TestImage640x480.vhd
 set_global_assignment -name VHDL_FILE TestImage1080p.vhd
 set_global_assignment -name VHDL_FILE TestImage1680x1050.vhd
@@ -97,16 +96,16 @@ set_global_assignment -name CDF_FILE Run.cdf
 set_global_assignment -name QIP_FILE PLL_148_5.qip
 set_global_assignment -name QIP_FILE PLL_141.qip
 set_global_assignment -name QIP_FILE PLL_25_2.qip
-set_location_assignment PIN_7 -to SERIALOUT
 set_global_assignment -name CDF_FILE Prog.cdf
-set_location_assignment PIN_110 -to testout
 set_global_assignment -name QIP_FILE PLL_25_17.qip
 set_global_assignment -name QIP_FILE PLL_143_5.qip
-set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
-set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
-set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_global_assignment -name QIP_FILE PLL_119_5.qip
+set_global_assignment -name QIP_FILE PLL_172_2.qip
+set_global_assignment -name QIP_FILE PLL_121_8.qip
+set_global_assignment -name QIP_FILE PLL_152_3.qip
+set_global_assignment -name QIP_FILE PLL_126_5.qip
+set_global_assignment -name QIP_FILE PLL_91_07.qip
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to CLK50
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7513_spdif
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7513_vs
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7513_hs
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7513_de
@@ -138,12 +137,8 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7513_d[23]
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7513_d
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7513_sda
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to adv7513_scl
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to CLKADC
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to SERIALOUT
-set_instance_assignment -name IO_STANDARD LVDS_E_3R -to testout
-set_global_assignment -name QIP_FILE PLL_119_5.qip
-set_global_assignment -name QIP_FILE PLL_172_2.qip
-set_global_assignment -name QIP_FILE PLL_121_8.qip
-set_global_assignment -name QIP_FILE PLL_152_3.qip
-set_global_assignment -name QIP_FILE PLL_126_5.qip
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_global_assignment -name QIP_FILE PLL_148_8.qip
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

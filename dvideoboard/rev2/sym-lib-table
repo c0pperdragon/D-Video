@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name dvideoboard-rescue)(type Legacy)(uri ${KIPRJMOD}/dvideoboard-rescue.lib)(options "")(descr ""))
+  (lib (name components)(type Legacy)(uri C:/Users/Reinhard/Documents/GitHub/D-Video/dvideoboard/components.lib)(options "")(descr ""))
+)

@@ -182,11 +182,6 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to R[0]
 set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to R
 set_location_assignment PIN_10 -to CSYNC
 set_global_assignment -name QIP_FILE PLL120x4.qip
-set_location_assignment PIN_11 -to USE_YPBPR
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to USE_YPBPR
-set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to USE_YPBPR
-set_location_assignment PIN_138 -to NORMALIZE
-set_instance_assignment -name IO_STANDARD "3.3-V LVCMOS" -to NORMALIZE
 set_global_assignment -name ENABLE_OCT_DONE OFF
 set_global_assignment -name ENABLE_CONFIGURATION_PINS OFF
 set_global_assignment -name USE_CONFIGURATION_DEVICE ON

@@ -1,6 +1,6 @@
 IP Upgrade report for dvideoboard
-Tue Sep 04 22:45:35 2018
-Quartus Prime Version 18.0.0 Build 614 04/24/2018 SJ Lite Edition
+Mon Aug 08 11:35:04 2022
+Quartus Prime Version 18.1.0 Build 625 09/12/2018 SJ Lite Edition
 
 
 ---------------------
@@ -35,10 +35,10 @@ refer to the applicable agreement for further details.
 +----------------------------------------------------------------------------+
 ; IP Upgrade Summary                                                         ;
 +------------------------------+---------------------------------------------+
-; IP Components Upgrade Status ; Passed - Tue Sep 04 22:45:35 2018           ;
-; Quartus Prime Version        ; 18.0.0 Build 614 04/24/2018 SJ Lite Edition ;
+; IP Components Upgrade Status ; Passed - Mon Aug 08 11:35:04 2022           ;
+; Quartus Prime Version        ; 18.1.0 Build 625 09/12/2018 SJ Lite Edition ;
 ; Revision Name                ; dvideoboard                                 ;
-; Top-level Entity Name        ; TestImage288p                               ;
+; Top-level Entity Name        ; TestImage1680x1050                          ;
 ; Family                       ; MAX 10                                      ;
 +------------------------------+---------------------------------------------+
 
@@ -48,25 +48,61 @@ refer to the applicable agreement for further details.
 +-------------+----------------+---------+----------------------+----------------------+-----------------+---------+
 ; Entity Name ; Component Name ; Version ; Original Source File ; Generation File Path ; New Source File ; Message ;
 +-------------+----------------+---------+----------------------+----------------------+-----------------+---------+
-; PLL         ; ALTPLL         ; 16.0    ; PLL.qip              ; PLL.vhd              ; PLL.qip         ;         ;
-; PLL114_816  ; ALTPLL         ; 16.0    ; PLL114_816.qip       ; PLL114_816.vhd       ; PLL114_816.qip  ;         ;
+; PLL114_816  ; ALTPLL         ; 18.0    ; PLL114_816.qip       ; PLL114_816.vhd       ; PLL114_816.qip  ;         ;
+; PLL_148_5   ; ALTPLL         ; 18.0    ; PLL_148_5.qip        ; PLL_148_5.vhd        ; PLL_148_5.qip   ;         ;
+; PLL_141     ; ALTPLL         ; 18.0    ; PLL_141.qip          ; PLL_141.vhd          ; PLL_141.qip     ;         ;
+; PLL_25_2    ; ALTPLL         ; 18.0    ; PLL_25_2.qip         ; PLL_25_2.vhd         ; PLL_25_2.qip    ;         ;
+; PLL_25_17   ; ALTPLL         ; 18.0    ; PLL_25_17.qip        ; PLL_25_17.vhd        ; PLL_25_17.qip   ;         ;
+; PLL_143_5   ; ALTPLL         ; 18.0    ; PLL_143_5.qip        ; PLL_143_5.v          ; PLL_143_5.qip   ;         ;
+; PLL_119_5   ; ALTPLL         ; 18.0    ; PLL_119_5.qip        ; PLL_119_5.vhd        ; PLL_119_5.qip   ;         ;
+; PLL_172_2   ; ALTPLL         ; 18.0    ; PLL_172_2.qip        ; PLL_172_2.vhd        ; PLL_172_2.qip   ;         ;
+; PLL_121_8   ; ALTPLL         ; 18.0    ; PLL_121_8.qip        ; PLL_121_8.vhd        ; PLL_121_8.qip   ;         ;
+; PLL_152_3   ; ALTPLL         ; 18.0    ; PLL_152_3.qip        ; PLL_152_3.v          ; PLL_152_3.qip   ;         ;
+; PLL_126_5   ; ALTPLL         ; 18.0    ; PLL_126_5.qip        ; PLL_126_5.vhd        ; PLL_126_5.qip   ;         ;
 +-------------+----------------+---------+----------------------+----------------------+-----------------+---------+
 
 
 +---------------------+
 ; IP Upgrade Messages ;
 +---------------------+
-Info (11902): Backing up file "PLL.vhd" to "PLL.BAK.vhd"
-Info (11837): Started upgrading IP component ALTPLL with file "PLL.vhd"
 Info (11902): Backing up file "PLL114_816.vhd" to "PLL114_816.BAK.vhd"
 Info (11837): Started upgrading IP component ALTPLL with file "PLL114_816.vhd"
-Info (11131): Completed upgrading IP component ALTPLL with file "PLL.vhd"
+Info (11902): Backing up file "PLL_148_5.vhd" to "PLL_148_5.BAK.vhd"
+Info (11837): Started upgrading IP component ALTPLL with file "PLL_148_5.vhd"
+Info (11902): Backing up file "PLL_141.vhd" to "PLL_141.BAK.vhd"
+Info (11837): Started upgrading IP component ALTPLL with file "PLL_141.vhd"
+Info (11902): Backing up file "PLL_25_2.vhd" to "PLL_25_2.BAK.vhd"
+Info (11837): Started upgrading IP component ALTPLL with file "PLL_25_2.vhd"
+Info (11902): Backing up file "PLL_25_17.vhd" to "PLL_25_17.BAK.vhd"
+Info (11837): Started upgrading IP component ALTPLL with file "PLL_25_17.vhd"
+Info (11902): Backing up file "PLL_143_5.v" to "PLL_143_5.BAK.v"
+Info (11837): Started upgrading IP component ALTPLL with file "PLL_143_5.v"
+Info (11902): Backing up file "PLL_119_5.vhd" to "PLL_119_5.BAK.vhd"
+Info (11837): Started upgrading IP component ALTPLL with file "PLL_119_5.vhd"
+Info (11902): Backing up file "PLL_172_2.vhd" to "PLL_172_2.BAK.vhd"
+Info (11837): Started upgrading IP component ALTPLL with file "PLL_172_2.vhd"
+Info (11902): Backing up file "PLL_121_8.vhd" to "PLL_121_8.BAK.vhd"
+Info (11837): Started upgrading IP component ALTPLL with file "PLL_121_8.vhd"
+Info (11902): Backing up file "PLL_152_3.v" to "PLL_152_3.BAK.v"
+Info (11837): Started upgrading IP component ALTPLL with file "PLL_152_3.v"
+Info (11902): Backing up file "PLL_126_5.vhd" to "PLL_126_5.BAK.vhd"
+Info (11837): Started upgrading IP component ALTPLL with file "PLL_126_5.vhd"
 Info (11131): Completed upgrading IP component ALTPLL with file "PLL114_816.vhd"
-Info (23030): Evaluation of Tcl script c:/intelfpga_lite/18.0/quartus/common/tcl/internal/ip_regen/ip_regen.tcl was successful
-Info: Quartus Prime Shell was successful. 0 errors, 1 warning
-    Info: Peak virtual memory: 720 megabytes
-    Info: Processing ended: Tue Sep 04 22:45:35 2018
-    Info: Elapsed time: 00:00:44
-    Info: Total CPU time (on all processors): 00:01:19
+Info (11131): Completed upgrading IP component ALTPLL with file "PLL_148_5.vhd"
+Info (11131): Completed upgrading IP component ALTPLL with file "PLL_141.vhd"
+Info (11131): Completed upgrading IP component ALTPLL with file "PLL_25_2.vhd"
+Info (11131): Completed upgrading IP component ALTPLL with file "PLL_25_17.vhd"
+Info (11131): Completed upgrading IP component ALTPLL with file "PLL_143_5.v"
+Info (11131): Completed upgrading IP component ALTPLL with file "PLL_119_5.vhd"
+Info (11131): Completed upgrading IP component ALTPLL with file "PLL_172_2.vhd"
+Info (11131): Completed upgrading IP component ALTPLL with file "PLL_121_8.vhd"
+Info (11131): Completed upgrading IP component ALTPLL with file "PLL_152_3.v"
+Info (11131): Completed upgrading IP component ALTPLL with file "PLL_126_5.vhd"
+Info (23030): Evaluation of Tcl script c:/intelfpga_lite/18.1/quartus/common/tcl/internal/ip_regen/ip_regen.tcl was successful
+Info: Quartus Prime Shell was successful. 0 errors, 0 warnings
+    Info: Peak virtual memory: 4853 megabytes
+    Info: Processing ended: Mon Aug 08 11:35:04 2022
+    Info: Elapsed time: 00:01:12
+    Info: Total CPU time (on all processors): 00:01:28
 
 

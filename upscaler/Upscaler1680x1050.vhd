@@ -38,13 +38,9 @@ entity Upscaler1680x1050 is
 		G : in std_logic_vector(7 downto 0);   -- Pb in YPbPr mode
 		B : in std_logic_vector(7 downto 0);   -- Pr in YPbPr mode
 		ENCODE : out std_logic;
-		NORMALIZE : out std_logic;
 		
 		-- CSYNC signal (not through ADCs)
-		CSYNC : in std_logic;
-		
-		-- mode switch
-		USE_YPBPR : in std_logic
+		CSYNC : in std_logic
 	);	
 end entity;
 
@@ -127,18 +123,6 @@ begin
 			bufferq		
 		);
 	
-
-	-- create the NORMALIZE output while csync is active in YPbPr mode
-	process (CLOCK0, USE_YPBPR)
-	begin
-		if rising_edge(CLOCK0) then
-			if SYNCHISTORY="00000000" and USE_YPBPR='1' then
-				NORMALIZE <= '1';
-			else
-				NORMALIZE <= '0';
-			end if;
-		end if;
-	end process;
 	
 	-- Sample the CSYNC signal at different points and produce a 
 	-- history vector. This output is synchronized with the main clock (CLOCK0)
@@ -237,10 +221,13 @@ begin
 		variable tmp_g : integer range -512 to 511;
 		variable tmp_b : integer range -512 to 511;
 		
+		variable pbzero : integer range 0 to 255 := 151;   -- zero level for pb signal
+		variable przero : integer range 0 to 255 := 156;   -- zero level for pr signal		
+		variable pbsummer : integer range 0 to 256*256-1;
+		variable prsummer : integer range 0 to 256*256-1;
+
 		constant darkest : integer := 20;   -- darkest DAC level of RGB channels
 		constant synctip : integer := 73;   -- black DAC level on channel with sync tip
-		constant pbzero : integer := 151;   -- zero level for pb signal
-		constant przero : integer := 156;   -- zero level for pr signal
 		
 	begin
 		if rising_edge(CLOCK0) then
@@ -263,24 +250,22 @@ begin
 				else scaled_b := tmp_b + tmp_b/2;
 				end if;
 				
-				-- pipelined operation to get rgb channels
-				-- straight RGB mode
-				if USE_YPBPR='0' then
-					tmp_r := in_r - darkest;
-					tmp_g := in_g - darkest;
-					tmp_b := in_b - darkest;
-				-- YPbPr mode 
+				-- do pipelined YPbPr computation  (in_r = Y, in_g = Pb, in_b = Pr)
+				tmp_r := in_r - synctip + in_b - przero;
+				tmp_g := in_r - synctip + (pbzero*13/128) + (przero*38/128) - (in_g*13/128) - (in_b*38/128);
+				tmp_b := in_r - synctip + in_g - pbzero;
+				
+				if x4 = 4*100 then
+					pbsummer := in_b;
+					prsummer := in_r;
+				elsif x4 = 4*(100+256) then
+					pbzero := pbsummer / 256;
+					przero := prsummer / 256;
 				else
-					-- do pipelined YPbPr computation  (in_r = Y, in_g = Pb, in_b = Pr)
-					tmp_r := in_r - synctip + in_b - przero;
-					tmp_g := in_r - synctip + (pbzero*13/128) + (przero*38/128) - (in_g*13/128) - (in_b*38/128);
-					tmp_b := in_r - synctip + in_g - pbzero;					
---					if x4<2400 then
---						tmp_r := in_r - synctip;
---						tmp_g := in_r - synctip;
---						tmp_b := in_r - synctip;
---					end if;
+					pbsummer := pbsummer + in_b;
+					prsummer := prsummer + in_r;
 				end if;
+				
 			end if;
 			
 									

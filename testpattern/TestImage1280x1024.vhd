@@ -3,9 +3,9 @@ use ieee.numeric_std.all;
 use ieee.std_logic_1164.all;
 
 -- Implement a simple test image generator for the D-Video board.
--- Straight forward 640x480 image. To see how well this scales on my screen.
+-- Straight forward 1280x1024 @60 Hz.
 
-entity TestImage640x480 is	
+entity TestImage1280x1024 is	
 	port (
 	   -- clocking input
 		CLK50: in std_logic;	
@@ -22,9 +22,9 @@ entity TestImage640x480 is
 end entity;
 
 
-architecture immediate of TestImage640x480 is
+architecture immediate of TestImage1280x1024 is
 
-component PLL_25_2 is
+component PLL_91_07 is
 PORT
 	(
 		inclk0		: IN STD_LOGIC  := '0';
@@ -37,7 +37,7 @@ component ConfigureADV7513 is
 		CLK50: in std_logic;			
 		adv7513_scl: inout std_logic; 
 		adv7513_sda: inout std_logic;
-		SERIALOUT: out std_logic	
+		SERIALOUT: out std_logic
 	);	
 end component;
 	
@@ -45,23 +45,22 @@ end component;
 signal CLKPIXEL    : std_logic;
 		
 begin		
-	pixelclockgenerator: PLL_25_2 port map ( CLK50, CLKPIXEL );
+	pixelclockgenerator: PLL_91_07 port map ( CLK50, CLKPIXEL );
 	configurator: ConfigureADV7513 port map ( CLK50, adv7513_scl, adv7513_sda, open);
 
 	------- generator for the HDMI test image 	
 	process (CLKPIXEL) 
 
--- ModeLine "640x480" 25.20 640 656 752 800 480 490 492 525 -HSync -VSync
-	constant h_img :  integer := 640;
-	constant h_fp :   integer := 16;
-	constant h_sync : integer := 96;
-	constant h_bp :   integer := 48;
-	constant s_hsync : std_logic := '0';
-	constant v_img :  integer := 480;
-	constant v_fp :   integer := 10;
-	constant v_sync : integer := 2;
-	constant v_bp :   integer := 33;
-	constant s_vsync : std_logic := '0';
+	constant h_img :  integer := 1280;
+	constant h_fp :   integer := 48;   -- 336;  -- 50Hz  48; 60Hz
+	constant h_sync : integer := 32;
+	constant h_bp :   integer := 80;
+	constant s_hsync : std_logic := '1';
+	constant v_img :  integer := 1024;
+	constant v_fp :   integer := 3;
+	constant v_sync : integer := 7;
+	constant v_bp :   integer := 20;
+	constant s_vsync : std_logic := '1';
 	
 	constant w : integer := h_sync + h_bp + h_img + h_fp;  -- 800
 	constant h : integer := v_sync + v_bp + v_img + v_fp;  -- 525
@@ -80,7 +79,7 @@ begin
 		
 	begin
 
-		if rising_edge(CLKPIXEL) then
+		if falling_edge(CLKPIXEL) then
 			-- create output signals
 			out_d := "000000000000000000000000";
 			out_de := '0';

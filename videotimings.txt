@@ -6,7 +6,7 @@ HDMI Video timings
 HOR FREQUENCY (kHz)         52.679        54.121        55.621
 ACTUAL VER FREQUENCY (Hz)   49.838        49.974        49.929
                             (50,119)      (50,095)      (50,096)
-PIXEL CLOCK	(MHz)       88.5          119.500       141.500
+PIXEL CLOCK	(MHz)           88.5          119.500       141.500
                             (89.000000)   (119.791667)  (141.975309)
 HSYNC POLARITY              NEGATIVE      NEGATIVE      NEGATIVE
 VSYNC POLARITY              POSITIVE      POSITIVE      POSITIVE

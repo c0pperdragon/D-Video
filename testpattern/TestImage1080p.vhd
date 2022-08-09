@@ -17,16 +17,14 @@ entity TestImage1080p is
       adv7513_vs : out std_logic;
       adv7513_clk : out std_logic;
       adv7513_d : out STD_LOGIC_VECTOR(23 downto 0);
-      adv7513_de : out std_logic;
-		
-		SERIALOUT : out std_logic
+      adv7513_de : out std_logic
 	);	
 end entity;
 
 
 architecture immediate of TestImage1080p is
 
-component PLL_148_5 is
+component PLL_148_8 is
 PORT
 	(
 		inclk0		: IN STD_LOGIC  := '0';
@@ -47,28 +45,27 @@ end component;
 signal CLKPIXEL    : std_logic;
 		
 begin		
-	pixelclockgenerator: PLL_148_5 port map ( CLK50, CLKPIXEL );
-	configurator: ConfigureADV7513 port map 
-	( CLK50, adv7513_scl, adv7513_sda, SERIALOUT);
+	pixelclockgenerator: PLL_148_8 port map ( CLK50, CLKPIXEL );
+	configurator: ConfigureADV7513 port map ( CLK50, adv7513_scl, adv7513_sda, open );
 
 	------- generator for the HDMI test image 	
 	process (CLKPIXEL) 
 
--- "1920x1080"     148.5 1920 2008 2052 2200 1080 1084 1088 1125 -HSync -VSync	
--- "ATSC-1080-60p" 148.5 1920 1960 2016 2200 1080 1082 1088 1125
+-- ModeLine "1920x1080" 148.800 1920 2448 2492 2622 1080 1084 1089 1135 +hsync +vsync  (50Hz)
+--           1920x1080" 148.800 1920 2008 2052 2185 1080 1084 1089 1135 +hsync +vsync  (60Hz)
 	constant h_img :  integer := 1920;
-	constant h_fp :   integer := 40;
-	constant h_sync : integer := 56;
-	constant h_bp :   integer := 184;
-	constant s_hsync : std_logic := '0';
+	constant h_fp :   integer := 2008-1920;
+	constant h_sync : integer := 2052-2008;
+	constant h_bp :   integer := 2185-2052;
+	constant s_hsync : std_logic := '1';
 	constant v_img :  integer := 1080;
-	constant v_fp :   integer := 4;
-	constant v_sync : integer := 4;
-	constant v_bp :   integer := 37;
-	constant s_vsync : std_logic := '0';
-	
-	constant w : integer := h_sync + h_bp + h_img + h_fp;  -- 2200
-	constant h : integer := v_sync + v_bp + v_img + v_fp;  -- 1125
+	constant v_fp :   integer := 1084-1080;
+	constant v_sync : integer := 1089-1084;
+	constant v_bp :   integer := 1135-1089;
+	constant s_vsync : std_logic := '1';
+ 	
+	constant w : integer := h_sync + h_bp + h_img + h_fp; 
+	constant h : integer := v_sync + v_bp + v_img + v_fp; 
 
 	variable x:integer range 0 to w-1:= 0;  
 	variable y:integer range 0 to h-1 := 0;  	

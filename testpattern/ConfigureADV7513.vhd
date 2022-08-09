@@ -86,25 +86,25 @@ begin
 		-- implement the program counter with states
 		type t_pc is (
 			main0,main1,main2,main3,main10,
-			main11,main12,main13,main14,main15,main16,main17,main99,
+--			main11,main12,main13,main14,main15,main16,main17,main99,
 			i2c0,i2c1,i2c2,i2c3,i2c3a,i2c4,i2c5,i2c6,i2c7,i2c8,i2c9,
 			i2c10,i2c11,i2c12,i2c13,i2c14,i2c16,i2c17,i2c18,i2c19,
 			i2c20,i2c21,i2c99,i2c100,i2c101,
 			i2cpulse0,i2cpulse1,i2cpulse2,
-			uart0,uart1,uart2,
+--			uart0,uart1,uart2,
 			delay0,delay1,
 			millis0,millis1
 		);
 		variable pc : t_pc := main0;
 	  	
 		variable main_i:integer range 0 to 255;
-		variable main_edid_hor:  unsigned(11 downto 0);
-		variable main_edid_vert: unsigned(11 downto 0);
+--		variable main_edid_hor:  unsigned(11 downto 0);
+--		variable main_edid_vert: unsigned(11 downto 0);
 		
-		-- subroutine: uart	
-		variable uart_retadr:t_pc;   
-		variable uart_data:unsigned(7 downto 0);         -- data to send
-		variable uart_i:integer range 0 to 11;        
+--		-- subroutine: uart	
+--		variable uart_retadr:t_pc;   
+--		variable uart_data:unsigned(7 downto 0);         -- data to send
+--		variable uart_i:integer range 0 to 11;        
 		
 		-- subroutine: i2cwrite
 		variable i2c_retadr : t_pc;
@@ -130,7 +130,7 @@ begin
 		variable millis_i:integer range 0 to 1000*50;
 		
 		-- output signal buffers 
-		variable out_tx : std_logic := '1';
+--		variable out_tx : std_logic := '1';
 		variable out_scl : std_logic := '1';
 		variable out_sda : std_logic := '1';
 --		variable out_resolution : integer range 0 to numres-1;
@@ -156,13 +156,13 @@ begin
 				i2c_rw := '0';			
 				i2c_retadr := main2;	
 			when main2 =>
-				if i2c_error/="00000000" then
-					pc := uart0;
-					uart_data := i2c_error; 
-					uart_retadr := main10;
-				else
+--				if i2c_error/="00000000" then
+--					pc := uart0;
+--					uart_data := i2c_error; 
+--					uart_retadr := main10;
+--				else
 					pc := main3;
-				end if;
+--				end if;
 			when main3 =>
 				if main_i<CONFIGDATA'LENGTH-1 then
 					main_i := main_i + 1;
@@ -171,108 +171,9 @@ begin
 					main_i := 0;
 					pc := main10;
 				end if;
-				
-			-- read out EDID memory
 			when main10 =>
-				pc := i2c0;
-				i2c_address := to_unsigned(16#3F#,7); -- to_unsigned(16#39#,7);
-				i2c_register := to_unsigned(main_i,8);
-				i2c_rw := '1';			
-				i2c_retadr := main11;
-			when main11 =>
-				if i2c_error/="00000000" then
-					pc := uart0;
-					uart_data := i2c_error; 
-					uart_retadr := main99;
-				else				
-					-- memorize native resolution info
-					if main_i=54+2 then
-						main_edid_hor(7 downto 0) := i2c_data;
-					elsif main_i=54+4 then
-						main_edid_hor(11 downto 8) := i2c_data(7 downto 4);
-					elsif main_i=54+5 then
-						main_edid_vert(7 downto 0) := i2c_data;
-					elsif main_i=54+7 then
-						main_edid_vert(11 downto 8) := i2c_data(7 downto 4);
-					end if;
-					pc := uart0;
-					uart_data := to_unsigned(hexdigit(to_integer(i2c_data(7 downto 4))),8);
-					uart_retadr := main12;
-				end if;
-			when main12 =>
-				pc := uart0;
-				uart_data := to_unsigned(hexdigit(to_integer(i2c_data(3 downto 0))),8);
-				uart_retadr := main13;
-			when main13 =>
-				pc := uart0;
-				if (main_i mod 16) = 15 then 
-					uart_data := to_unsigned(10,8);
-				else
-					uart_data := to_unsigned(32,8);
-				end if;
-				uart_retadr := main14;			
-			when main14 =>
-				if main_i < 127 then
-					main_i := main_i + 1;
-					pc := main10;
-				else
-					pc := uart0;
-					uart_data := to_unsigned(10,8);
-					uart_retadr := main15;			
-				end if;
-			when main15 =>
-				-- decide which resolution to use
---				out_resolution := numres-1;
---				for i in 0 to numres-2 loop
---					if  to_integer(main_edid_hor)=timings(i)(2) 
---					and to_integer(main_edid_vert)=timings(i)(8) then
---						out_resolution := i;
---					end if;
---				end loop;
-				pc := main99;
-			when main16 =>  
-				-- toggle the re-read bit
-				pc := i2c0;
-				i2c_address := to_unsigned(16#39#,7);
-				i2c_register := to_unsigned(16#C9#,8);
-				i2c_data := to_unsigned(2#00000011#,8);
-				i2c_rw := '0';			
-				i2c_retadr := main17;
-			when main17 =>  -- toggle the re-read bit
-				pc := i2c0;
-				i2c_address := to_unsigned(16#39#,7);
-				i2c_register := to_unsigned(16#C9#,8);
-				i2c_data := to_unsigned(2#00010011#,8);
-				i2c_rw := '0';			
-				i2c_retadr := main99;
-				
-			-- wait a bit before polling the EDID again
-			when main99 =>
-				pc := millis0;
-				millis_millis := 1000;
-				millis_retadr := main10;   
-					
-			-- uart transmit
-			when uart0 =>
-				out_tx := '0'; -- start bit
-				uart_i := 0;
-				pc := delay0;
-				delay_micros := 104;  -- delay setting for for 9600 baud
-				delay_retadr := uart1;
-			when uart1 =>
-				out_tx := uart_data(uart_i);  -- data bits
-				pc := delay0;
-				if uart_i<7 then 
-					uart_i := uart_i+1;
-					delay_retadr := uart1;
-				else 
-					delay_retadr := uart2;
-				end if;	
-			when uart2 =>
-				out_tx := '1'; -- stop bit and idle level
-				pc := delay0;
-				delay_retadr := uart_retadr;				
-			
+				pc := main10;
+							
 			-- i2c transfer
 			when i2c0 =>
 				delay_micros := 3;   -- configure i2c step speed (ca. 100k bit/s)
@@ -484,7 +385,7 @@ begin
 		end if;
 
 	   -- async logic: set output signals according to registers
-		SERIALOUT <= out_tx;
+		SERIALOUT <= '0'; -- out_tx;
 		if out_scl='0' then adv7513_scl <= '0'; else adv7513_scl <= 'Z'; end if; 
 		if out_sda='0' then adv7513_sda <= '0'; else adv7513_sda <= 'Z'; end if; 
 --		resolution <= out_resolution;	
