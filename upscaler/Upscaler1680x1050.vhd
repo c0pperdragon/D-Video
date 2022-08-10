@@ -202,9 +202,9 @@ begin
 	------ input sampling ---
 	process (CLOCK0)
 		variable prev_csync : std_logic;
-		variable in_r : integer range 0 to 255;
-		variable in_g : integer range 0 to 255;
-		variable in_b : integer range 0 to 255;
+		variable in_y : integer range 0 to 255;
+		variable in_pr : integer range 0 to 255;
+		variable in_pb : integer range 0 to 255;
 
 		variable triggercounter : integer range 0 to 3;
 		variable x4 : integer range 0 to 8191;
@@ -221,12 +221,13 @@ begin
 		variable tmp_g : integer range -512 to 511;
 		variable tmp_b : integer range -512 to 511;
 		
+		variable yzero : integer range 0 to 255 := 151;    -- zero level for y signal
 		variable pbzero : integer range 0 to 255 := 151;   -- zero level for pb signal
 		variable przero : integer range 0 to 255 := 156;   -- zero level for pr signal		
-		variable pbsummer : integer range 0 to 256*256-1;
-		variable prsummer : integer range 0 to 256*256-1;
+		variable ysummer  : integer range 0 to 256*64-1;
+		variable pbsummer : integer range 0 to 256*64-1;
+		variable prsummer : integer range 0 to 256*64-1;
 
-		constant darkest : integer := 20;   -- darkest DAC level of RGB channels
 		constant synctip : integer := 73;   -- black DAC level on channel with sync tip
 		
 	begin
@@ -250,25 +251,37 @@ begin
 				else scaled_b := tmp_b + tmp_b/2;
 				end if;
 				
-				-- do pipelined YPbPr computation  (in_r = Y, in_g = Pb, in_b = Pr)
-				tmp_r := in_r - synctip + in_b - przero;
-				tmp_g := in_r - synctip + (pbzero*13/128) + (przero*38/128) - (in_g*13/128) - (in_b*38/128);
-				tmp_b := in_r - synctip + in_g - pbzero;
+				-- do pipelined YPbPr computation
+				tmp_r := in_y;
+				tmp_r := tmp_r - yzero; 
+				tmp_r := tmp_r + in_pr;
+				tmp_r := tmp_r - przero;
+				tmp_g := in_y;
+				tmp_g := tmp_g - yzero;
+				tmp_g := tmp_g - (in_pb*13/128); 
+				tmp_g := tmp_g + (pbzero*13/128); 
+				tmp_g := tmp_g - (in_pr*50/128);  -- 38
+				tmp_g := tmp_g + (przero*50/128); -- 38
+				tmp_b := in_y;
+				tmp_b := tmp_b - yzero;
+				tmp_b := tmp_b + in_pb;
+				tmp_b := tmp_b - pbzero;
 				
-				if x4 = 4*100 then
-					pbsummer := in_b;
-					prsummer := in_r;
-				elsif x4 = 4*(100+256) then
-					pbzero := pbsummer / 256;
-					przero := prsummer / 256;
+				if x4/4 = 250 then
+					ysummer  := in_y;
+					pbsummer := in_pb;
+					prsummer := in_pr;
+				elsif x4/4 = 250+64 then
+					yzero  := 75; -- ysummer / 64;
+					pbzero := pbsummer / 64;
+					przero := prsummer / 64;
 				else
-					pbsummer := pbsummer + in_b;
-					prsummer := prsummer + in_r;
-				end if;
-				
+					ysummer  := ysummer  + in_y;
+					pbsummer := pbsummer + in_pb;
+					prsummer := prsummer + in_pr;
+				end if;				
 			end if;
 			
-									
 			-- generate the sync pulses to lock the HDMI output to the input
 			QUARTERLINEBEGIN <= x4=0 or x4=prevx4/4 or x4=prevx4/2 or x4=prevx4/2+prevx4/4;			
 			FIRSTLINEBEGIN <= (y=15) and ((x4=0 and not shiftedframe) or (x4=prevx4/2 and shiftedframe));
@@ -327,9 +340,9 @@ begin
 			
 			-- registered input
 			prev_csync := SYNCHISTORY(7);
-			in_r := to_integer(unsigned(R));
-			in_g := to_integer(unsigned(G));
-			in_b := to_integer(unsigned(B));
+			in_y := to_integer(unsigned(R));
+			in_pb := to_integer(unsigned(G));
+			in_pr := to_integer(unsigned(B));
 		end if;
 		
 		-- determine where to write next pixel to and what to write
