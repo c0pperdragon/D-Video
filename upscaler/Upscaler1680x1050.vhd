@@ -40,7 +40,10 @@ entity Upscaler1680x1050 is
 		ENCODE : out std_logic;
 		
 		-- CSYNC signal (not through ADCs)
-		CSYNC : in std_logic
+		CSYNC : in std_logic;
+
+		-- for testing
+		DEBUG: out std_logic
 	);	
 end entity;
 
@@ -201,7 +204,7 @@ begin
 	
 	------ input sampling ---
 	process (CLOCK0)
-		variable prev_csync : std_logic;
+		variable prev_csync : std_logic_vector(15 downto 0);
 		variable in_y : integer range 0 to 255;
 		variable in_pr : integer range 0 to 255;
 		variable in_pb : integer range 0 to 255;
@@ -227,8 +230,6 @@ begin
 		variable ysummer  : integer range 0 to 256*64-1;
 		variable pbsummer : integer range 0 to 256*64-1;
 		variable prsummer : integer range 0 to 256*64-1;
-
-		constant synctip : integer := 73;   -- black DAC level on channel with sync tip
 		
 	begin
 		if rising_edge(CLOCK0) then
@@ -258,10 +259,10 @@ begin
 				tmp_r := tmp_r - przero;
 				tmp_g := in_y;
 				tmp_g := tmp_g - yzero;
-				tmp_g := tmp_g - (in_pb*13/128); 
-				tmp_g := tmp_g + (pbzero*13/128); 
-				tmp_g := tmp_g - (in_pr*50/128);  -- 38
-				tmp_g := tmp_g + (przero*50/128); -- 38
+				tmp_g := tmp_g ; -- - (in_pb*13/128); 
+				tmp_g := tmp_g ; -- + (pbzero*13/128); 
+				tmp_g := tmp_g ; -- - (in_pr*50/128);  -- 38
+				tmp_g := tmp_g ; -- + (przero*50/128); -- 38
 				tmp_b := in_y;
 				tmp_b := tmp_b - yzero;
 				tmp_b := tmp_b + in_pb;
@@ -283,11 +284,11 @@ begin
 			end if;
 			
 			-- generate the sync pulses to lock the HDMI output to the input
-			QUARTERLINEBEGIN <= x4=0 or x4=prevx4/4 or x4=prevx4/2 or x4=prevx4/2+prevx4/4;			
-			FIRSTLINEBEGIN <= (y=15) and ((x4=0 and not shiftedframe) or (x4=prevx4/2 and shiftedframe));
+--			QUARTERLINEBEGIN <= x4=0 or x4=prevx4/4 or x4=prevx4/2 or x4=prevx4/2+prevx4/4;			
+			FIRSTLINEBEGIN <= (y=14) and (x4<2400);
 
 			-- adjust sample delay and trigger to fit the sync edge as closely as possible
-			if SYNCHISTORY(7)='0' and prev_csync='1' then
+			if SYNCHISTORY(7)='0' and prev_csync(0)='1' then
 				if SYNCHISTORY(6)='1' then SAMPLEDELAY <= 7; 
 				elsif SYNCHISTORY(5)='1' then SAMPLEDELAY <= 6;
 				elsif SYNCHISTORY(4)='1' then SAMPLEDELAY <= 5;
@@ -310,9 +311,9 @@ begin
 			end if;
 			
 			-- Progress counters according to sync 
-			-- Only accept falling sync edge if not comming too early.
+			-- Only accept clean falling sync edge if not comming too early.
 			-- Also check if the frame should be shifted by half a line (for interlace)
-			if SYNCHISTORY(7)='0' and prev_csync='1' and x4>=7000 then
+			if prev_csync="1100000000000000" and x4>=7000 then
 				if synclowtime>6000 then
 					y := 0;
 					shiftedframe := false;
@@ -329,7 +330,7 @@ begin
 				x4 := 0;
 			else
 				-- keep track of how much time the csync was low (to detect a vsync)
-				if SYNCHISTORY(7)='0' and synclowtime<8191 then
+				if prev_csync(0)='0' and synclowtime<8191 then
 					synclowtime := synclowtime+1;
 				end if;
 				-- normal x counter progressing
@@ -339,7 +340,7 @@ begin
 			end if;
 			
 			-- registered input
-			prev_csync := SYNCHISTORY(7);
+			prev_csync := prev_csync(14 downto 0) & SYNCHISTORY(7);
 			in_y := to_integer(unsigned(R));
 			in_pb := to_integer(unsigned(G));
 			in_pr := to_integer(unsigned(B));
@@ -357,28 +358,25 @@ begin
 	end process;
 
 	
-	------- forward the pixel clock to the HDMI transmitter 
-	process (CLOCK0)
-	begin
-      adv7513_clk <= CLOCK0;
-	end process;
 	
 	------- pixel output generation 
-	process (CLOCK0, VERTICALSHIFT) 
-	
-		constant h_sync : integer := 44;
+	process (CLOCK0, VERTICALSHIFT, QUARTERLINEBEGIN, FIRSTLINEBEGIN)	
+
+      constant h_sync : integer := 44;
 		constant h_bp :   integer := 64;
 		constant h_img :  integer := 1680;
-		constant h_fp :   integer := 132;
+		-- constant h_fp :   integer := 132;
 
 		constant v_sync : integer := 8;
 		constant v_bp :   integer := 64;
 		constant v_img :  integer := 1050;
-		constant v_fp :   integer := 500; -- need external sync for proper frame
+		-- constant v_fp :   integer := 500; -- need external sync for proper frame
 		
 		variable x:integer range 0 to 2047:= 0;  
 		variable y:integer range 0 to 2047:= 0;  		
 	begin
+      adv7513_clk <= CLOCK1;
+
 		if rising_edge(CLOCK0) then 
 		
 			-- create syncs
@@ -411,26 +409,78 @@ begin
 
 			-- progress counters
 			if QUARTERLINEBEGIN then
-				x := h_sync+h_bp+h_img+h_fp/2;
-				if FIRSTLINEBEGIN then
-					y := v_sync+v_bp+v_img+v_fp-1;
-				end if;
-			elsif x<h_sync+h_bp+h_img+h_fp-1 then
-				x:=x+1;
-			else
 				x := 0;
-				if y<v_sync+v_bp+v_img+v_fp-1 then
-					y := y+1;
-				else
+				if FIRSTLINEBEGIN then
 					y := 0;
+				elsif y<2047 then
+					y := y + 1;
 				end if;
+			elsif x<2047 then
+				x := x +1;
 			end if;
 		end if;
 
 		-- determine from which address to fetch next pixel
-		bufferrdaddress <= x + 150 + 2048*(((y+VERTICALSHIFT*2)/4) mod 4);
+		bufferrdaddress <= x + 140 + 2048*(((y+VERTICALSHIFT*2)/4) mod 4);
 			
 	end process;
 
+	
+	------ create line syncs from frame sync --------------
+	process (CLOCK0, FIRSTLINEBEGIN)	
+		variable framelength:integer range 0 to 4194303 := 0;  
+		variable pixelcounter:integer range 0 to 4194303 := 0; 
+		variable accu:integer range 0 to 4194303:= 0; 		
+		variable prevfirstlinebegin : boolean;
+		
+		constant numlines : integer := 312*4;
+	begin		
+		if rising_edge(CLOCK0) then 
+			QUARTERLINEBEGIN <= false;
+			
+			if FIRSTLINEBEGIN and not prevfirstlinebegin then
+				framelength := pixelcounter;
+				pixelcounter := 1;		
+				accu := framelength;
+				QUARTERLINEBEGIN <= true;
+			else
+				pixelcounter := pixelcounter+1;				
+				if accu >= numlines then
+					accu := accu - numlines;
+				else
+					accu := accu + framelength - numlines;
+					QUARTERLINEBEGIN <= true;
+				end if;				
+			end if;
+			
+			prevfirstlinebegin := FIRSTLINEBEGIN;
+		end if;
+			
+	end process;
+
+	
+	------- debug signal 
+	process (CLOCK0, QUARTERLINEBEGIN, FIRSTLINEBEGIN)	
+		variable count:integer range 0 to 2047:= 0; 		
+	begin
+		
+		if rising_edge(CLOCK0) then 
+			if QUARTERLINEBEGIN then
+				count := 120*10;
+				DEBUG <= '0';
+			elsif count > 0 then
+				count := count-1;
+				DEBUG <= '0';
+			else
+				DEBUG <= '1';
+			end if;
+		end if;
+			
+	end process;
+	
+
+	
+	
+		
 end immediate;
 
