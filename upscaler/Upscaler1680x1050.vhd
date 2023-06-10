@@ -231,6 +231,7 @@ begin
 		variable pbsummer : integer range 0 to 256*64-1;
 		variable prsummer : integer range 0 to 256*64-1;
 		
+		constant rgbzero: integer := 15;		
 	begin
 		if rising_edge(CLOCK0) then
 			-- take sample at correct phase and adjust colors
@@ -240,16 +241,16 @@ begin
 			if x4 mod 4 = 0 then
 				-- do clipping and and additional scaling of rgb channels
 				if tmp_r<0 then scaled_r:=0; 
-				elsif tmp_r>170 then scaled_r:=255;
-				else scaled_r := tmp_r + tmp_r/2;
+				elsif tmp_r>144 then scaled_r:=255;
+				else scaled_r := tmp_r + tmp_r/2 + tmp_r/4;
 				end if;
 				if tmp_g<0 then scaled_g:=0; 
-				elsif tmp_g>170 then scaled_g:=255;
-				else scaled_g := tmp_g + tmp_g/2;
+				elsif tmp_g>144 then scaled_g:=255;
+				else scaled_g := tmp_g + tmp_g/2 + tmp_g/4;
 				end if;
 				if tmp_b<0 then scaled_b:=0; 
-				elsif tmp_b>170 then scaled_b:=255;
-				else scaled_b := tmp_b + tmp_b/2;
+				elsif tmp_b>144 then scaled_b:=255;
+				else scaled_b := tmp_b + tmp_b/2 + tmp_b/4;
 				end if;
 				
 				-- do pipelined YPbPr computation
@@ -281,6 +282,11 @@ begin
 					pbsummer := pbsummer + in_pb;
 					prsummer := prsummer + in_pr;
 				end if;				
+				
+				-- for RGB mode, do use RGB values linearly
+				tmp_r := in_y;	 tmp_r := tmp_r - rgbzero;
+				tmp_g := in_pb; tmp_g := tmp_g - rgbzero;				
+				tmp_b := in_pr; tmp_b := tmp_b - rgbzero;
 			end if;
 			
 			-- generate the sync pulses to lock the HDMI output to the input
@@ -375,7 +381,7 @@ begin
 		variable x:integer range 0 to 2047:= 0;  
 		variable y:integer range 0 to 2047:= 0;  		
 	begin
-      adv7513_clk <= CLOCK1;
+      adv7513_clk <= CLOCK0; -- CLOCK1;
 
 		if rising_edge(CLOCK0) then 
 		
